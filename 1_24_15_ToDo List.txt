@@ -423,7 +423,7 @@ ToDo: put a death animation in for /pet go away - 1/21/16
 ........................
 - NON_ESSENTIAL
 ........................
-ToDo: for Adam: work on NPC appearance w/ DB - many GMs, merchants, etc. - they are default ugly - 12/15/15 (fuck him slacker bitch)
+ToDo: for Adam: work on NPC appearance w/ DB - many GMs, merchants, etc. - they are default ugly - 12/15/15
 
 ToDo: custom titles for characters who do something special - 12/30/15
 
@@ -431,7 +431,7 @@ ToDo: Look into PVP code - certain dots, maybe with snare component, in PVP have
 
 ToDo: create trivial loot code with cazic thule in mind (rubicite)
 
-ToDo: for Adam: make same mobs in zone but different level vary in size (fuck him slacker bitch)
+ToDo: for Adam: make same mobs in zone but different level vary in size
 
 ToDo: create something to suspend the account for a short period of time if /q-ing out
 
