@@ -1,0 +1,1019 @@
+*** these notes plus descriptions are located in the dated `<date>_Changelog_ToDo.txt` files ***
+*** unaltered and altered files are located in C:\EQ\EQEmuServer\Source_changes ***
+*** see `code_change_process.txt` for procedural descriptions of making code changes ***
+*** there will be multiple files with virtually the same contents labelled according to save date to revert/compare as needed ***
+
+
+3/2/16
+
+Changed archery damage calculation in <Mob::DoArcheryAttackDmg> based on github commits - \zone\special_attacks.cpp(1027)
+
+Added to GM command #showstats through <Client::SendStatsWindow> to show runspeed on the stats window - \zone\client.cpp(7092)
+
+3/1/16
+
+Added command <hotfix> <load_shared_memory> and <apply_shared_memory> to load shared memory as a GM command
+	- numerous changes of which I'm guessing allow the greater functionality of using the commands to load specific shared DB sections
+	- \zone\command.cpp(10672) \zone\command.h(254,367) \common\shareddb.h(96) \common\shareddb.cpp(too many to list) \common\servertalk.h(87) \common\item.cpp(1443,1474,1530)
+	- \zone\net.cpp(too many to list) \zone\worldserver.cpp(1844) \world\net.cpp(298) \world\zoneserver.cpp(1291,1302)
+	- \shared_memory\main.cpp(too many to list) \shared_memory\base_data.h() \shared_memory\base_data.cpp() \shared_memory\items.h() \shared_memory\items.cpp()
+	- \shared_memory\loot.h() \shared_memory\loot.cpp() \shared_memory\npc_faction.h() \shared_memory\npc_faction.cpp()
+	- \shared_memory\skill_caps.h() \shared_memory\skill_caps.cpp() \shared_memory\spells.h() \shared_memory\spells.cpp()
+
+2/28/16
+
+Added conditions within <Mob::CommonDamage>  and <Mob::SpellOnTarget> to add to a pet's hate_list if the owner is attacked by multiple NPCs
+	- previously, the pet would not automatically attack other mobs after it's first target unless commanded - \zone\attack.cpp(4036) \zone\spells.cpp(3998)
+
+Added conditions in <Mob::SpellOnTarget> to have pet attack if a detrimental spell does not cause damage - \zone\spells.cpp(4049)
+
+Added condition within <Mob::CommonDamage> to make pets not aggro when owner strikes a DS - \zone\attack.cpp(3866)
+
+Changed flee_ratio for lt blue NPCs in <Mob::CheckFlee> to coincide with the rule change and desired outcome - \zone\fearpath.cpp(94)
+	- new hp % is: green @ 25% - blue/lt blue @ 20% and all else @ 17.5%
+
+Added to condition to return speed of 0 if speed is < 0 in <Mob::_GetFearSpeed> in several places - \zone\mob.cpp(761)
+
+Fixed errant conditions in <Mob::GetActDoTDamage> which were allowing full dot damage to rooted mobs - \zone\effects.cpp(212)
+	- also fixed a condition which did not give full damage when fleeing
+
+Added to <Mob::AI_Process> conditions to immediately stop pet attacks when a mob is mezzed - \zone\mob_ai.cpp(1121)
+			
+2/25/16
+
+Hotfix: Fixed XP gain with pet doing more than 25% damage and less than 50% in <NPC::Death> - \zone\attack.cpp(2290,2381)
+	- this was causing maximum XP gain, at least at low levels, if damage met the conditions above
+	- this was a result of added logging recently
+	- also changed the name of the variable to something which better describes it <petdmg_ratio>
+
+Hotfix: Bug fixes in <NPC::Death> in three places - \zone\attack.cpp(2191,2381,2543)
+	- two instances in logging and one with the killshot going to a non-existent entity in the zone seen through DoTs	
+	
+2/23/16
+
+Made changes to logging of top damage in <NPC::Death> for better readability and minor mistakes - \zone\attack.cpp(2289,2377)
+	- for this changed the result of one of the custom functions calculating total damage in <HateList::TopDamageRatio> - \zone\hate_list.cpp(1043)
+
+Added logging to <Mob::Taunt> on a successful taunt to better track top hate - \zone\special_attack.cpp(2376)
+
+2/22/16
+
+Altered <struct_HateList> and created new functions <HateList::AddDSDamage>, <HateList::TotalDSDamage> to calculate total damage done by a damage shield on an NPC
+	- implemented functions in <Mob::DamageShield> and <NPC::Death> - \zone\hate_list.h(32,72) \zone\hate_list.cpp(364,974,996) \zone\attack.cpp(2283,2374,2946)
+	- the main purpose of creating these were to log DS damage to get better data on NPC hp/total damage
+
+Changed zone forage chance to 12% to essentially equal the chance of foraging any of the common items in <Client::ForageItem> - \zone\forage.cpp(407)
+	
+2/21/16
+
+Added to <Mob::AI_Process> and created a new timer <AIcheck_target_oor_timer> for NPCs staying in combat range - \zone\mob_ai.cpp(430,481,550,1027,1404)  \zone\mob.h(1237)
+	- this was to prevent NPCs from following a player when leaving melee range and the hate amounts of those in combat range were close enough the NPC would normally stay put
+
+Altered <NPC::Death> logging for "Top Damage" to include pet total damage and damage percent - \zone\attack.cpp(2376)
+	- also reworked logging in <HateList::GetEntWithMostHateOnList> for better data/readability - \zone\hate_list.cpp(709)
+	
+2/20/16
+
+Added to <EntityList::MobProcess> to disable the <staticzone_timer> when there is at least one client in zone - \zone\entity.cpp(554)
+
+Combined pet and NPC guard movement behavior into on function <NPC::NextGuardPosition> - \zone\waypoints.cpp(442)
+	- this was a revamp of guard movement to make it more efficient
+	- removed all of the code from <NPC::AI_DoMovement> - <IsGuarding> section - \zone\mob_ai.cpp(1784)
+
+Created function <bool IsInstantHealSpell> for use in changing how heal aggro is noticed by NPCs - \common\spdat.h(847) \common\spdat.cpp(886)
+	- implemented function in <Mob::CheckHealAggroAmount> in conjunction with a switch to identify - \zone\entity.h(337) \zone\entity.cpp(3111) \zone\aggro.cpp(1256)
+	- instant heals are now noticed 90% of the time
+
+Implemented higher initial hate for kos with buffing and healing in <EntityList::AddHealAggro> - \zone\entity.cpp(3121)
+	
+Added a condition to <Client::CalcManaRegen> to make GM thirst level become a non-factor when medding for mana - \zone\client_mods.cpp(1276)
+	- I had previously overlooked adding this condition	
+
+Changed how invis effects stack with each other in <Mob::SpellOnTarget> - \zone\spells.cpp(3740)
+	- this will need some work to allow the same spell effect with a higher to overwrite
+	- although unfailing invis usually has a lower duration so, the code as it is may be good enough
+	- also added a caster message if the spell doesn't stick
+
+Created new function <EntityList::ZEposUpdate> for the purpose of updating zonign clients	- \zone\entity.h(419) \zone\entity.cpp(4241)
+	- the function works but it does not update the client as I had hoped - commented out any usage of it
+
+Tweaked hate logging for better results in <HateList::GetEntWithMostHateOnList> - \zone\hate_list.cpp(710)
+	
+Changed many of the mechanics of taunt in <Mob::Taunt> to fit an earlier era - \zone\special_attacks.cpp(2294)
+	- much of this was courtesy of Alkabor with minor customizing and some altering to fit the code
+	- the major difference affects taunt chance and level difference
+	- taunt will no longer automatically make the mob face the taunter when successful - something else must be done
+	- a few conditions were added from alkabor which were previously omitted
+	- this may be all that is needed for the life of the server except, perhaps, if mobs lvl 60+ become affected by skill after PoP	
+
+Added conditions to <NPC::Attack> to allow low level pets wielding weapons with max damage higher than their `npc_types.maxdmg` to use weapon damage - \zone\attack.cpp(1991)
+	
+2/19/16
+
+Created two rules to limit the amount of logging of aggro data - \common\ruletypes.h(526)
+	- implemented rule into previously created log feature in <*HateList::GetEntWithMostHateOnList>
+	- zone\hate_list.h (91) \zone\hate_list.cpp(465,721) \zone\client.h(1475) \zone\client.cpp(220)
+
+2/18/16
+	
+Changed witness hate % to 35 from 40 in <EntityList::AddHealAggro> - \zone\entity.cpp(3108)
+
+Added code to <*HateList::GetEntWithMostHateOnList> which sets top hate to client if client was in range and pet had more hate - \zone\hate_list.cpp(580)
+	- this was mistakenly omitted/lost in the process during the aggro revamp
+	
+Added to <NPC::Attack> to make all NPC melee hate 1/2 of max damage - \zone\attack.cpp(2010,2065)
+	- also added hate to misses in this function which includes pet melee hate - according to Alkabor
+	- changed hate value on misses for generic <NPC::DoRangedAttackDmg> to maxdmg - assuming this is for NPCs - \zone\special_attacks.cpp(1437)	
+	
+Changed hate amount on a successful taunt when the entity is already on top hate to 0 from 12 in <Mob::Taunt> - \zone\special_attacks.cpp(2353)	
+
+2/17/16
+
+Changed a couple minor issues with data types in tradeskill skill up rates in <Client::CheckIncreaseTradeskill> - \zone\tradeskills.cpp(1199)
+	- also adjusted the logging data types and added several more features, reducing clutter giving more information
+
+Created rule <RuleI(World, UnlockWorldTimer)> to keep the world locked when the server is initially started up - \common\ruletypes.h(20) \world\net.cpp(374,497)
+	- the purpose is to hopefully reduce/eliminate some weird bugs which seem to occur more frequently if players login immediately after the server is started
+
+Changed and added to <Client::CheckIncreaseSkill> and <Client::MobConAdj> to fix bonuses not being applied to extremely low skillup rates - \zone\client.cpp(2374,2475)
+	
+2/16/16
+
+Many of the aggro changes below are courtesy of Alkabor but, with some customizing and substantial altering to fit my code
+
+Changed value in <EntityList::AddHealAggro> to more accurate witness hate chance according to Alkabor - \zone\entity.cpp(3108)
+
+Changed <Mob::CheckAggroAmount> and <HateList::GetEntWithMostHateOnList> to take max hp minus any spell bonuses
+	- this is according to Alkabor research - \zone\aggro.cpp(1031) \zone\hate_list.cpp(529)
+	
+Changed implementation of function <HateList::GetEntWithMostHateOnList> to work with code from Alkabor dealing with behavior aggro
+	- much of what was used from Alkabor need to be drastically changed to work with existing EMU code and my customization
+	- some of the changes could be made into new functions similar to what Alkabor did to clean up the main function
+	- the changes deal with sit aggro, low hp aggro, melee range aggro, first in range aggro
+	- my changes and additions include scaling range, melee range and first in range aggro particularly at lower levels
+	- two functions are not implemented and were used for reference but, could be altered and implemented to clean up the above function and provide better functionality overall
+		- <HateList::SetOwner> <HateList::GetHateBonus>
+	- \zone\hate_list.h(84) \zone\hate_list.cpp(40,450)
+	
+Added code to <Mob::DoArcheryAttackDmg> and <Mob::DoThrowingAttackDmg> to account for archery and throwing <aiyellforhelp> on engage - \zone\special_attacks.cpp(976,1613)	
+
+Commented out curing messages which reveal the effect being cured in <Mob::SpellEffect> - \zone\spell_effects.cpp(1901,1936,1973)
+	- put generic curing message in it's place		
+		
+2/14/16
+
+Many of the aggro changes below are courtesy of GitHub but, with some customizing
+
+Changed rule name and implementation of <RULE_INT(Aggro, MaxScalingProcAggro, 400)> was <MaxStunProcAggro> - \common\ruletypes.cpp(518)
+	- also changed many other spells hate values and general function variables in <Mob::CheckAggroAmount> - \zone\aggro.cpp(1005)
+
+Added rules <RULE_INT(Combat, NPCAssistCap, 5)> <RULE_INT(Combat, NPCAssistCapTimer, 6000)>	<RULE_BOOL(Aggro, AllowTickPulling, false)> - \common\ruletype.h(484,522)
+	- these work with "yellforhelp" changes described below
+
+Added code to implement above rules and make <aiyellforhelp> function better - \zone\mob.h(485,968,1272)
+	- \zone\mob.cpp(438,2729) \zone\npc.cpp(727) \zone\mob_ai.cpp(1863,1918) \zone\attack.cpp(2692) \zone\aggro.cpp(440,448,492)
+	- this was taken from GitHub and may need to be altered slightly for my needs
+
+Changed several recent code updates to follow custom <yellforhelp> behavior - \zone\npc.cpp(719) \zone\attack.cpp(2853) \zone\aggro.cpp(440) \zone\mob_ai.cpp(1863)
+
+Changed chancemod of skillfishing to 0 from 5 in <Client::GoFish> - \zone\forage.cpp(360)
+
+Added and implemented new forage rules <ForageNeedFoodorDrink> and <ForageCommonFoodorDrink> courtesy of Alkabor - \common\ruletypes.h(169) \zone\forage.cpp(388)
+
+Changed <Client::CalcManaRegen> and <Client::LevelRegen> to exclude GMs from the penalty - \zone\client_mods.cpp(180,235,1299)
+	- GMs don't need food but hunger/thirst levels tick down to 0 making them not regen previously
+
+2/13/16
+
+Many of the aggro changes below are courtesy of GitHub but, with some customizing
+
+Changed proximity hate value in <EntityList::CheckClientAggro> to 25 from 100 - \zone\aggro.cpp(47)
+	-  this check occurs and clients are added if they are threat/kos and in proximity/aggro/frenzy range regardless of sit/stand
+
+Added poison and disease counters to <Mob::CheckAggroAmount> to add hate to dots of these types - \zone\aggro.cpp(1052)
+	- a rule should be made if these counters were not adding hate in later expansions
+	- also made a small change which was probably unnecessary to the conditions on hp in the same function
+
+Removed the condition which made riposte not generate aggro in <Client::Attack> - \zone\attack.cpp(1426)
+	- there may be other places where this needs to happen
+
+Changed <Mob::AddToHateList> to add 100 hate on engage/scan/etc - \zone\attack.cpp(2702)
+	- altered <Mob::CheckAggroAmount> <Mob::CheckHealAggroAmount> because of something about spell casting subtlety - \zone\aggro.cpp(1177,1244)
+	
+2/12/16
+
+Implemeted <Client::Handle_OP_SetRunMode> from GitHub to more accurately set client fear speed 
+	- made alterations to suit my build specifically in client fear speed
+	- \zone\client.h(1165,1394)  \zone\client_packet.cpp(11945) \common\opcode_dispatch.h(149) \zone\client.cpp(202) \zone\mob.cpp(728,1122) \zone\client_process.cpp(541)
+
+Added to <Mob::_GetFearSpeed()> to make NPCs use their current runspeed when feared or blinded - \zone\mob.cpp(751)
+	
+Changed many of the hate values of spells and spell effects (procs/clickies) from files on GitHub
+	- the majority of functions <Mob::CheckAggroAmount>, <int32 Mob::CheckHealAggroAmount>, <EntityList::AddHealAggro> were changed with new hate values
+	- many changes in <Mob::IsImmuneToSpell> and <Mob::SpellOnTarget> due to slight function alteration
+	- \zone\aggro.cpp(47,998,998,1177) \zone\mob.h(866) \zone\entity.cpp(3098) \zone\entity.h(336) \zone\lua_mob.cpp(1175,1180,1185,1190) 
+	- \zone\perl_mob.cpp(6319,6352) \zone\spells.cpp(3971,4013,4339,4366,4382,4399,4423,4463)
+	- bot files were also changed even though I have no plans to use them - \zone\bots.h(204) \zone.bots.cpp(6908,6914)	
+
+2/11/16
+
+Implemented rule <RuleB(Pets, RandomLevel)> in <Mob::MakePoweredPet> -> Finally! - \zone\pets.cpp(251)
+	- another condition/rule could be put in at this location to allow npcs to always cast the highest level pet
+
+Fixed fear/flee code so mobs do not fall under the ground when going downhill in <Mob::CalculateNewFearpoint> - \zone\fearpath.cpp(231)
+	- this was an oversight when I reworked this code but, I was suspicious of this particular section
+
+Fixed <staticzone_timer> in <EntityList::MobProcess> to actually work by adding true/false conditions and changing another slightly - \zone\entity.cpp(480)	
+	
+2/9/16
+
+Added a check in <Mob::AddToHateList> to make the first NPC engaged yell for help if hate > 1 to bypass <assist_timer> - \zone\attack.cpp(2836) 
+	- <assist_timer> was largely inaccurate for this purpose and NPCs would often ignore their friend being attacked
+	- after the initial engage, <assist_timer> functions normally 
+	- although this should probably be lowered because other NPCs can still path directly across another NPC and not "yell for help" in time
+
+Added check in <NPC::Process()> to reduce domino effect <aiyellforhelp> seems to generate in open places - \zone\npc.cpp(705)
+	- also added condition for mobs which are fleeing or feared to <aiyellforhelp>
+
+Changed a few things in <Client::CheckFizzle> to fix how specialization was affecting the overall fizzle chance - \zone\spells.cpp(908,942,944)
+	- it was resetting the fizzlechance within that section
+	- also made the function a bit more efficient by skipping sections which do not apply to characters at different levels
+	
+2/8/16
+
+Hotfix for group experience being calculated incorrectly in <Group::SplitExp>
+	- changed an iteration name because it was being used twice in the same function - \zone\exp.cpp(853)
+	- my oversight was resulting in members being counted twice when calculating total group members
+
+Changed chancemod of meditate and channeling from -16 and -15 to -17 and -16, respectively - \zone\client_mods.cpp(1288) \zone\spells.cpp(1592)
+
+Changed death xp loss when player has recently levelled into the threshold where XP loss occurs from rule <DeathExpLossLevel> - \zone\attack.cpp(1689)		
+	- changed logic to set exploss to 0 if under <DeathExpLossLevel + 1> value
+	- changed logic to mitigate exploss if exploss would take character below <DeathExpLossLevel + 1> value
+	- changed logging to more accurately tell what is happening at all levels
+	
+2/7/16
+
+Changed <chancemodi> of meditate to -16 from -15 and senseheading from -16 to -17 - \zone\client_mods.cpp(1282) \zone\client_packet.cpp(11836)
+
+Changed logging for <Client::CheckIncreaseSkill> to make for easier understanding - \zone\spells.cpp(982)
+	
+Changed logging for <Client::CheckFizzle> to make for easier reading - \zone\client.cpp(2405,2421)
+
+Changed implementation of rule <UnderconExpBonus> to affect all mobs level 1-5 regardless of player level - \zone\exp.cpp(899)  \zone\attack.cpp(2450)		
+
+2/6/16
+
+Changed <chancemodi> for channeling to -5 and -15 from 5 and 0 for regain_conc and normal casting, respectively in <Mob::CastedSpellFinished> - \zone\spells.cpp(1592)
+
+2/5/16
+
+Changed logging for skillup chance and added a cap to <mobconadj> in <Client::MobConAdj> to not exceed a mod of 1.2 - \zone\client.cpp(2401,2464)
+	- added a true/false condition to log more accurately
+	
+Reworked tradeskill success chance in <Client::TradeskillExecute> to match eqtraders.com - \zone\tradeskills.cpp(929)
+	- the previous function gave 95% chance if at trivial which is wildly errant
+	- very high level tradeskills should use a different equation to make a bit more challenging, perhaps
+
+Changed <chancemodi> for SkillTracking to -15 from -10 in <Client::Handle_OP_Track> - \zone\client_packet.cpp(13277)
+
+Created and implemented rule <UnderconExpBonus> in <Client::AddEXP> to help mitigate poor XP scaling in the earliest levels - \common\ruletypes.h(47) \zone\exp.cpp(296)
+	- New function <float Mob::UnderconExpBonus(uint8 mlevel) created to implement rule above - \zone\mob.h(430) \zone\attack.cpp(2657)
+	- Solo underconbonus using function above implemented in <NPC::Death> - \zone\attack.cpp(2450)
+	- Group underconbonus using function above implemented in <Group::SplitExp> - \zone\exp.cpp(866,894)
+	
+2/4/16
+
+Created rule <RULE_INT(Character, PetOwnerExpLimit, 50)> to work with rule <PetExpDamageLimit> - \common\ruletypes.h(46)
+
+Changed rule <PetOwnerExpLimit> and <PetExpDamageLimit> to REAL for accurate implementation - \common\ruletypes.h(46)
+
+Change name of function <HateListDamage> to <TotalHateListDamage> and all associations to describe a little better - \zone\hate_list.h(71) \zone\hate_list.cpp(588)
+	- a couple other places were changed
+	
+Created new function <int HateList::GetPetDamage()> - \zone\hate_list.h(49) \zone\hate_list.cpp(604)
+	- used to adjust incoming XP based on pet damage
+	- this could be done better but it serves the purpose
+
+Implemented the above rule <PetOwnerExpLimit> in <NPC::Death> - \zone\attack.cpp(2254,2446)
+	- changed implementation rule <PetExpDamageLimit> to accomodate the new function and rule
+	- gives the value of the rule in exp if the pet does >= value of the rule <PetExpDamageLimit>
+	- implemented XP scaling if the pet does a % of damage related to <PetExpDamageLimit>
+	- added condition where pet does 100% damage and takes 100% xp
+	- several things added, a few deleted and many others moved around to make it work
+	- some things could be better or more efficient
+
+2/3/16
+
+Changed logging of <ZoneDatabase::GetZoneForage> to <moderate skills> from <error> since it doesn't seem like it's in error - \zone\forage.cpp(46)
+
+Added additional logging to <Client::CheckIncreaseSkill> to give more data on the recent improvements - \zone\client.cpp(2418)	
+
+Added additional logging to <Mob::CheckHitChance> to show skillid of skillinuse - \zone\attack.cpp(356)	
+
+Added <spellbonuses.movementspeed> to <Mob::ShowBuffs> to show movement speed as part of showbuffs - \zone\mob.cpp(1583)
+
+Added additional logging to <Client::Death> which shows "DEATH", charid and a better description - \zone\attack.cpp(1628)	
+	
+Altered a portion of an equation I overlooked where <chancetohit> was being added twice at <Mob::CheckHitChance> - \zone\attack.cpp(227)
+	
+Created and implemented rule <RULE_INT(Combat, NPCKickStunLvl, 1)> at <Mob::CommonDamage> - description unnecessary - \common\ruletypes.h(390) \zone\attack.cpp(3820)
+
+Changed DOT damage while moving equation to 2/3rd damage always - \zone\effects.cpp (210)
+			
+2/1/16
+
+Attempted to fix crashing issue with the dot fix on 12/11/15 by changing the log options - \zone\attack.cpp(2121)
+	- this doesn't make sense because this particular log is not enabled but the line is noted in the crash report <NPC:Damage>
+
+Changed flee speed in <GetFearSpeed> of an unsnared mob above 16% but below 20% hp - \zone\mob.cpp(798)	
+
+1/31/16
+
+Changed rule <(Character, SkillUpModifier,> to REAL for checkincreaseskill changes - \common\ruletypes.h(79)
+	- changed it's usage in two places - \zone\client.cpp(2377,2524)
+
+Reworked implementation of <Client::CheckIncreaseSkill> to support the new functions better and more accurately - \zone\client.cpp(2371)
+	- this mainly consisted of altering the data types
+	- commented out a small section which was reverting the needed data type to a lesser one
+	- the conditions allow stats and spell level to always be relevant when checking for skill increase
+
+Reworked implementation of <float Client::StatAdj> and within <CheckSkillIncrease> - \zone\client.cpp(2321,2384)
+	- many changes of data types
+
+Reworked implementation of <float Client::SpellLevelAdj> and within <CheckSkillIncrease> - \zone\client.cpp(2407,2388)
+	- many changes of data types
+
+Changed location of <CheckSkillIncrease> for archery from <Client::RangedAttack> to <Mob::DoArcheryAttackDmg> - \zone\special_attacks.cpp(1039)
+	- this is to check only on a successful hit
+	- also raised the <chancemodi> to -10 from -15
+
+Changed location of <CheckSkillIncrease> for throwing from <Client::ThrowingAttack> to <Mob::DoThrowingAttackDmg> - \zone\special_attacks.cpp(1625)
+	- this is to check only on a successful hit
+	- also lowered the <chancemodi> to -5 from 0	
+
+Added CIS <offense> to all ranged weapon attacks, kick, bash, monk skills, backstab and frenzy  - \zone\special_attacks.cpp(1063,1650,295,387,556,733,2192)	
+	- need to test monk skills, backstab, frenzy, throwing
+	
+Added code to allow certain skills check even in not hit in conjunction with the above change - \zone\attack.cpp(1298)
+	- this applies to DW and DA
+	- also lowered the <chancemodi> to -15 from -10 - \zone\client_process.cpp(408,511)
+	
+Changed <chancemodi> for sense heading to -16 from -5 to account for max skill at level 1 - \zone\client_packet.cpp(11836)
+
+Changed location of <CheckSkillIncrease> for weaponskills/offense/defense/defensive skills in <Client::Attack> - \zone\attack.cpp(442+,1375)
+	- this is to check only on a successful hit
+	- damage may not occur due to a defensive ability successfully triggering
+	- changed chancemodi from -15 to -16: this is only a slight penalty from before with new code	
+	
+Added code to allow DW and DA skills to check even if no hit in conjunction with the above change - \zone\attack.cpp(1298)
+	- lowered the <chancemodi> to -16 from -10 - \zone\client_process.cpp(408,511)
+	- also removed these skills from checking twice in one attack
+
+Reworked implementation of <float Client::MobConAdj> and <uint8 Client::GetMinLevelCon> and within <CheckSkillIncrease> - \zone\client.cpp(2390,2451,2464)
+	- several data types changes and equation changes
+	
+1/30/16
+
+Commented out section of code in <Client::Handle_OP_ClientUpdate> which was checking tracking skill several times per second when moving
+	- this will result in only checking for skill increases when the player uses the skill interactively - \zone\client_packet.cpp(4440)
+
+Created functions <float StatAdj>, <float SpellLevelAdj>, <float MobConAdj> to work with <uint8 Client::GetMinLevelCon>
+	- \zone\client.cpp(2321) \zone\client.cpp(2407) \zone\client.cpp(2336) \zone\client.cpp(2352)
+	
+Added to <Client::CheckIncreaseSkill> to support the new functions - \zone\client.cpp(2289)
+	- this included adding a large section where skilltypes are identified by the stat which influences their skillup rate
+	
+1/29/16
+
+Changed rules <RULE_REAL(Combat, BaseHitChance, 65.0)> <RULE_REAL(Combat, AgiHitFactor, 1.0)> for new basehit and different implementation - \common\ruletypes.h(404,412)
+
+Created rule <RULE_REAL(Combat, DefenseSkillHitAdj, 1.0)> with it's current value to temporarily mitigate the errant accuracy formulas - \common\ruletypes.h(479)
+
+Implemented both altered and new rules at <Mob::CheckHitChance> to create some variance in the hit rates across classes - \zone\attack.cpp(242,263)
+	- these numbers were extracted from parses provided by torvin
+
+Changed rule <RULE_REAL(Character, DeathExpLossMultiplier, 3)> to REAL from INT for different implementation - \common\ruletypes.h(34)	
+
+Implemented changed rule above at <Client::Death> - \zone\attack.cpp(1607)
+	- overhaul of exp loss on death
+	- added level tiers to give a break to lower level and high level players
+	- added additional code to mitigate large losses when losing a level - the relative % remains the same throughout
+	- this also covers rezzing when xp is lost between two levels
+	
+Created new rules to influence how often skillups occur similar to live particularly in the older eras - \common\ruletypes.h(164)
+	- <RULE_REAL(Skills, StatSkillInfluence, 100)> <RULE_REAL(Skills, MobLevelInfluence, 100)> <RULE_REAL(Skills, SpellLevelInfluence, 100)>	
+	
+1/27/16
+
+Moved a section of code and added a condition to <StartShutdownTimer> and <staticzone_timer> which share the condition - \zone\entity.cpp(546)
+	- the point is to only start these timers if noone is in zone
+	
+Added another condition	to <int main> to log more specific data on client version if it's titanium or below - \world\net.cpp(471)
+	- probably unnecessary but it will let me know if it's not titanium and it logged in somehow, hopefully
+
+Created rule to toggle classic bash/kick damage <RULE_BOOL(Combat, ClassicKickBashDamage, true)> - \common\ruletypes.h(477)
+	- implemented rule but needed to find the old code in an archived file (glad I save everything) - \zone\special_attacks.cpp(30,56)
+	
+Altered <Mob::_GetFearSpeed()> coefficients when not snared to lower values - \zone\mob.cpp(778)
+	- this means mobs will slow down slower~
+
+Created rule <RULE_BOOL(Spells, DoTWornOffMessageOn, true)> to toggle DoTWornOffMessage if rule WornOffMessageOn is false - \common\ruletypes.h(378)
+	- implemented rule where the main rule(WornOffMessageOn) is false by adding to <Mob::BuffFadeBySlot> - \zone\spell_effects.cpp(4111)
+
+Fixed incorrect logging of group experience in <Group::SplitExp> - \zone\exp.cpp(897)	
+
+Added code to <Client::RangedAttack> to cause ranged attack failure if client has no LoS to target - \zone\special_attacks.cpp(778)
+	
+Implemented rule <RuleB(Spells, EnableOldDispelMechanics)> in <Mob::SpellEffect> - \zone\spell_effects.cpp(1051)
+	- also added a commented out section for possible future use if research/feedback provides more info about the `base_effect_value` of cancel magic spells	
+	
+1/26/16
+
+Added logging feature to client version limiting <int main> to identify incoming client versions - \world\net.cpp(449)
+
+1/25/16
+
+Created rule <RULE_INT(Zone, StaticZoneNoPCTimer, 300)> to be able to adjust how long a zone remains static - \common\ruletypes.h(241)
+	- this is used alongside rule <Zone:AutoShutdownDelay>
+	- I do not know what would happen if AutoShutdownDelay time was shorter than StaticZoneNoPCTimer
+
+Created function <Zone::StartStaticZoneTimer> intended to be used to set/start the timer for static zones - \zone\zone.h(146) \zone\zone.cpp(1431)
+	- this is not in use
+
+Implemented rule above to allow zones to remain static for the value set in the rule, in seconds - \zone\zone.h(147,335-unused) \zone\zone.cpp(746,802)
+	- the main reasons are to keep players safe and prevent exploiting of zone idling <EntityList::MobProcess> - \zone\entity.cpp(480)
+
+Added and removed code courtesy of Github which places a new DB table and support for eqtime via the DB over the eqtime.cfg file
+	- I deleted all the old code which I could have commented out - saved the old files ofc
+	- replace - \common\database.h(244) \world\zoneserver.cpp(968) world\net.cpp(334,522)
+	- delete - \common\eqemuconfig.h(82,156) \common\eqtime.h(41) \common\eqemuconfig.cpp(256,407,471) \common\eqtime.cpp(136)
+	- add - \common\database.cpp(2176) \common\database.h(244)
+
+1/24/16
+
+Changed <NPC::NextGuardPosition> where a pet tracks the closest mob, used <FaceMob()> in place of the two lines present prior - \zone\waypoints.cpp(478)
+
+Added 2HB animation by changing the value in <Mob::AttackAnimation> for <Skill2HBlunt> for both NPCs and clients - \zone\attack.cpp(91,140)
+
+Changed implementation of rule <Zone:AutoShutdownDelay> to work in seconds instead of ms so counting zeros isn't a hassle
+	- \common\ruletype.h(228) \zone\zone.cpp(745,1420) \zone\zone.h(145) \zone\zone_db.cpp(2872,2877)
+
+1/23/16
+
+Altered previous fizzlechance code which gave a bonus to the chance if the skill was near the spell level skill - \zone\spells.cpp(910)
+	- unintentionally omitted a portion of the equation
+
+Added new function <void NPC::PauseGuarding> to create a pause between quest responses and return to the guard position (heading)
+	- a few other checks had to be put
+	- \zone\npc.h(293) \zone\mob.h(1279) \zone\mob.cpp(427) \zone\waypoints.cpp(156) \zone\mob_ai.cpp(1762) \zone\npc.cpp(686,2422)
+
+Added code to <NPC::AI_DoMovement()> to fix merchants and setheading similar to above - \zone\mob_ai.cpp(1762)
+
+Changed mistake in rule naming to <RULE_BOOL(Skills, StandToBindWound, false)> it was sit - \common\ruletypes.h(161) \zone\client.cpp(2555,2703)
+	- applied the changes in three places
+
+Created two rules <RULE_BOOL(Skills, UseOldTradeskillMethod, false)> <RULE_INT(Skills, UseCharRecipeList, 1)> to limit tradeskill searches and combines - \common\ruletypes.h(162)
+	- <UseOldTradeskillMethod> toggles both searches and newer UI functionality
+	- <UseCharRecipeList> has three setting which relay on the above rule being false for functionality
+		- 1 allows both searches and newer UI functionality from known char_recipes
+		- 2 allows only search capabilities for know char_recipes
+		- 0 is disabled - the main rule sets how combines work
+
+Implemented above rules using <Object::HandleAutoCombine> and <Client::Handle_OP_RecipesSearch>	- \zone\treadeskills.cpp(443) \zone\cleint_packet.cpp(11443,11474)
+
+1/22/16
+
+Replaced code at <Client::AddEXP> with the experience required for the current level in two places
+	- rather using the rule to calculate from total experience - \zone\exp.cpp(418)
+
+Deleted the "disabled" message from <Client::KeyRingAdd> and added it to <Doors::HandleClick> - \zone\client.cpp(3912) \zone\doors.cpp(273)
+
+Added additional code to <Client::CheckFizzle> to help mitigate high fizzle rates - \zone\spells.cpp(902)
+	- this applies when skill is within 10 points of the "spell cap" - spell level * 5 + 5
+
+1/18/16
+
+Created and implemented tradeskill rule for tailoring skill increase modification
+	- <RULE_INT(Character, TradeskillUpTailoring, 2)> - \common\ruletypes.h(124) \zone\tradeskills.cpp(873)
+
+1/16/16
+
+Created a rule to alter the influence statistics have on fizzlechance <RULE_REAL(Spells, StatFizzleInfluence, 20)> - \common\ruletypes.h(372)
+	- this is mostly a convenience rule
+
+Modified and added code to <Client::CheckFizzle> to increase fizzle rate similar to how live was years ago - \zone\spells.cpp(779)
+	- changed the majority of the function with many different equations and variables
+	- implemented rule above within the function
+	- some may consider the rates a little harsh and care should be given if changing due to all the variables
+
+Added and implemented new rule to set <basefizzle> - <RULE_REAL(Spells, BaseFizzle, 15)> - \common\ruletypes.cpp(373) \zone\spells.cpp(849)
+	- this should help quite a bit to test/tweak the fizzle equations
+
+1/15/16
+
+Fixed the majority of disbanding issues with groups larger than 2 <Group::DelMember> - \zone\groups.cpp(614,637)
+	- commented out 2 sections of code
+	- creating logging features in many places to understand and find the issues - \zone\groups.cpp(547,584,886,1163) \zone\client_packet.cpp(6333)
+	- not all issues were resolved - when resolved the logging features should be removed/disabled
+
+1/14/16
+
+Added and changed logging features when a group gets experience in two places <Group::SplitExp> <Client::AddEXP> - \zone\exp.cpp(439,898)
+
+1/13/16
+
+Added rule <RULE_REAL(Spells, MinimumFizzleChance, 2.5)> to change minimum fizzle chance - \common\ruletypes.h(370)
+	- implemented 1/16/16
+
+Created rule <RULE_BOOL(Skills, SitToBindWound, false)> to switch to classic bind wound mechanics - \common\ruletypes.h(160)
+
+Added code to function <Client::BindWound> to implement above rule to make bind wound not succeed if sitting - \zone\client.cpp(2555,2703)
+	- this disables the client button but does not consume a bandage
+
+Commented out section of code in <Client::Process> which gave the client message for group members logging out and leaving the zone - \zone\client_process.cpp(738,743)
+
+Added <RuleB(NPC, ShowLastname)> to <Mob::CreateSpawnPacke> in two places to toggle lastname according to rule- \zone\mob.cpp(943,1024)
+
+Added code to <Mob::CheckFlee> to turn the NPC away if speed <= 0 and fleeing - \zone\fearpath.cpp(108)
+
+1/12/16
+
+Placed <CheckIncreaseSkill> in a different location so it will only check when BW succeeds - \zone\client.cpp(2683)
+
+Altered code to allow a successful BW (under 50% hp, in my case) to heal beyond 50% - \zone\client.cpp(2703)
+	- commented out section of code which was setting improper conditions related to above fix
+
+Added code to <Client::GoToDeath()> in the same place as the mana CH I did some time ago - \zone\zoning.cpp(764)
+	- also, changed the mana ch code from <SetMana(CalcMaxMana());>  to <SetMana(GetMaxMana());>
+	- both mana and end show lower on the client UI
+
+Added thirst condition to <Client::CalcManaRegen()> to not use meditate skill regen if extreme thirst - \zone\client_mods.cpp(1268)
+	- additionally, the player will have regen of 0 if standing
+
+Added hunger condition to <Client::LevelRegen()> to nullify HP regen if hungry - \zone\client_mods.cpp(168,229)
+	- additionally, the player will have regen of 0 if standing
+	- level > 50 it may be a bit off, particularly monk feigned (not much if any)
+
+Added code to function <Mob::CheckWillAggro> to make NPCs aggro players with low hp (< 20%) - \zone\aggro.cpp(332)
+	- also added to the above function <NPC::DescribeAggro> as it appears to be old logging features - \zone\aggro.cpp(169)
+
+Changed code at <NPC::DoClassAttacks> to make bash/kick have the same timer as players - \zone\special_attacks.cpp(1834,1854,1907,1932)
+
+1/10/16
+
+Created new function <bool AIStayNFight> to check nearby engaged mobs of their faction and not flee if they are the same primary faction - \zone\entity.h(386) \zone\aggro.cpp(483)
+	- removed a generic condition from <checkflee> which made all mobs stay and fight if more than one present - \zone\fearpath.cpp(104)
+
+Altered code at <Mob::CommonDamage> for stun mechanics - \zone\attack.cpp(3721)
+	- client stun level with kick, specifically, wasn't behaving properly the result is:
+		- bash always stun 55 and under mob
+		- bash 15% chance 56 and over mob, no character restrictions - unsure if this is correct
+		- kick 0% character 54 and under and also mob 56 and over
+		- kick 15% character 55 and over AND mob 55 and under
+
+1/8/16
+
+Fixed client fear by removing a portion of code in <Mob::CalculateNewFearpoint()> - \zone\fearpath.cpp(234,249)
+	- removed a condition which limited the distance
+	- another purpose of the change is to enable fearpathing for all waypoint distances
+
+Added code to <Mob::CalculateNewFearpoint()> to reduce/eliminate the odd blinking occurances when finding a new fearpath waypoint - \zone\fearpath.cpp(213,243,368)
+	- removed a coefficient from <makenewpossendupdate> where it finds best z and blinking was an reduced - \zone\waypoints.cpp(640)
+	- cleaned up the fearpath code a bit, removing redundancies and possible causes of the main issue
+	- the code inadvertently seems to work well with large vertical changes
+
+Fixed <Mob::CalculateNewFearpoint()> by adding the random waypoint section to the new fear code - \zone\fearpath.cpp(260)
+	- the random element was cut in half making the distance between waypoints half
+	- this is to account for large variance in "z" and allows SE_FEAR to work properly
+	- this will also account for obstructions in the new fear code
+
+1/6/16
+
+Added another check to for <checkflee> and removed some inefficiency in the fearpath code - \zone\fearpath.cpp(185) \zone\attack.cpp(3943)
+
+Changed logging features in a few places - notably <NPC::Death> <Client::AddEXP> - \zone\attack.cpp(2219) \zone\exp.cpp(439)
+	- important parsing features
+
+Fixed a glaring bug by adding <curfp> to place where stratfleeing occurs - \zone\fearpath.cpp(42)
+
+1/5/16
+
+Created and implemented a new rule <RULE_INT(Character, AdjustOldRaceClassExpPenalties, 100)> - \zone\ruletypes.h(95)
+	- used in conjunction with <UseOldRaceExpPenalties> <UseOldClassExpPenalties> to adjust the magnitude of these rules
+
+Commented out portion of code where previous rules for race/class penalties were used - \zone\exp.cpp(738)
+	- Added the rules above, immediately following the other <UseRaceClassExpBonuses> rule and adjusted accordingly - \zone\exp.cpp(92,244)
+
+1/4/16
+
+Added code to <Client::CalcEXP> and <Client::AddEXP> to nullify the rule <Character:UseXPConScaling> if character is under level 13 - \zone\exp.cpp(99,204)
+
+Created new rule <RULE_REAL(Character, LgGroupExpMultiplier, 0.5)> to further incentivize grouping - \common\ruletypes.h(41)
+	- implemented rule at <Group::SplitExp> - \zone\exp.cpp(768)
+
+Created and implemented new GM command (#showexp) to show the GM experience stats
+	- \zone\command.h(528) \zone\mob.h(528) \zone\command.cpp(371,1181) \zone\mob.cpp(1515)
+
+Changed <CheckIncreaseSkill> coefficients for several skills - lowering to allow more gradual increases
+	- Riposte, Block, Parry, Dodge (to -15 from -10) - \zone\attack.cpp(414,450,484,514)
+	- Meditate (to -15 from -5) - \zone\client_mods.cpp(1274)
+	- Hide, Sneak, Forage (to -5 from 5)  - \zone\client_packet.cpp(7846,12654) \zone\forage.cpp(360)
+	- Bash, Kick, Taunt (to -10 from 10) - \zone\special_attacks.cpp(246,330,2172)
+
+Added code to <NPC::Death> and <Client::AddEXP> for experience logging features - \zone\attack.cpp(2273) \zone\exp.cpp(340)
+
+1/1/16
+
+Added and altered <Mob::CalculateNewFearpoint()> to make NPCs turn around and run away when in flee/fear mode - \zone\fearpath.cpp(142)
+	- large project where the bulk is unfinished - the overall goal is to make fearpathing better in more closed areas
+	- in open areas flee will work as it did originally
+
+12/30/15
+
+Created function <CalcOppositeHeadingToTarget> to initially test pet guard heading and coords - \zone\mob.h()821 \zone\waypoints.cpp(549)
+
+12/29/15
+
+Added and altered code in <Mob::CommonDamage> to make pet attack if owner is attacked and attacker misses - \zone\attack.cpp(3599,3795)
+
+Added code to <Mob::SpellOnTarget> to make pet attack if owner is cast upon with a detrimental spell and completely resists - \zone\spells.cpp(3874)
+
+12/28/15
+
+Changed many ability timers to values consistent with the Titanium client - see notes for specifics
+	- many timers increased in several files
+	- \zone\client.cpp(144,2582) \common\features.h(130) \zone\mob.cpp(101) \zone\client_packet.cpp(3546,10472) \zone\npc.cpp(120)
+
+Altered code <Mob::CommonDamage> to properly checkflee if under threshold- \zone\attack.cpp(3942)
+	- simple oversight which was excluding a checkflee if client was under attack, also added more conditions to avoid crashing
+
+Added code to <Mob::CheckFlee()> to stay and fight if mob has more hp than other then flees as normal when doesn't - \zone\fearpath.cpp(76)
+
+12/27/15
+
+Added code to <NPC::NextGuardPosition()> to make pets use .path files when going back to guard spot - \zone\waypoints.cpp(432)
+
+Added code to several functions to make pets and pet commands behave more intuitively
+	- <NPC::NextGuardPosition()>, <NPC::AI_DoMovement()>, <Mob::AI_Process()>, <Client::Handle_OP_PetCommands>, <Mob::AI_Event_Engaged>
+	- pet commands (PET_ATTACK, PET_GUARDHERE, PET_FOLLOWME, PET_STANDUP, PET_SITDOWN)
+	- pet follow, sit, stand and attack will enable following as the basic behavior (sit is a position change, ofc)
+	- pet guard is an addition to the commands sit, stand and attack and pets will continue guarding after using these commands
+	- pet follow breaks a guard command but pet back does not
+	- if guarding and standing still, pets will face the nearest NPC
+	- pets do not return to sitting if attacked or asked to attack
+	- pet animations should adhere to the command issued
+	- added invalid targets to "/pet attack" condition
+	- \zone\mob_ai.cpp(1476,1421,1719,1834) \zone\client_packet.cpp(9812) \zone\waypoints.cpp(434)
+
+12/26/15
+
+Added code to make summoned pets not retain a guard spot on zoneentry for better pet control - \zone\mob_ai.cpp(532)
+	- if (GetNPCTypeID() < 1000) { return; }
+	- changed to -> if (HasOwner() && GetOwnerID() > 0)  { return; } - doesn't seem to work reverted to previous 12/28/15
+	- hopefully no undesired side-effects
+
+Added code to <Mob::AI_Process()> to make pets use .path files when following - \zone\mob_ai.cpp(1477)
+
+12/25/15
+
+Added code to <void Mob::AI_Process()> to get NPCs to look at you if you rooted them - \zone\mob_ai.cpp(1419)
+	- this should apply to the highest hate target - not
+	- this should also apply to pets
+	- added <hate_list.GetEntWithMostHateOnList()> in place of <GetTarget()>
+
+Added to <NPC::AI_DoMovement()> to make NPCs go back to their guard headings if they attacked and didn't move
+		- added checks to <IsGuarding()> -> <SendPosition()> was vital - \zone\mob_ai.cpp(1699)
+
+Created function <Mob *EntityList::GetClosestMob> for pet guard (SPO_guard) to point to nearest NPC when guarding
+	- \zone\entity.h (395) \zone\entity.cpp (4611)
+
+Added code to <NPC::NextGuardPosition()> using above function and conditions to track nearest NPCs - \zone\waypoints.cpp(432)
+	- added <this->GetAppearance() == eaStanding> so pet would not move while sitting
+
+12/24/15
+
+Added code to <Client::Handle_OP_PetCommands> <PET_GUARDHERE:> to make it more functional - \zone\client_packet.cpp(9970)
+
+Fixed <NPC::NextGuardPosition()> to stop NPCs from moving in the client when they get to their guard position - \zone\waypoints.cpp(432)
+	- pets (and likely other NPCs) would continue moving in client when the server says they have stopped moving
+
+Fixed pet guard returning to guard point with proper heading <NPC::NextGuardPosition()> - \zone\waypoints.cpp(432)
+	- added <SetHeading(m_GuardPoint.w);>
+
+Fixed <HateList::TopDamageRatio()> due to `EXCEPTION_INT_DIVIDE_BY_ZERO` - \zone\hate_list.cpp(585)
+	- oversight of GM command #kill not producing `hatelist_damage`
+
+12/23/15
+
+Implemented rule <Character:PetExpDamageLimit>
+	- multiple functions created with logging features added
+	- <Mob* GetEntWithMostDamageOnList();> returns top damage dealer - \zone\hate_list.h(47) \zone\hate_list.cpp(485)
+	- <int GetMostDamageofEntOnList();> returns damage by top damage dealer - \zone\hate_list.h(48) \zone\hate_list.cpp(504)
+	- <int HateListDamage();> returns total damage in HP lost - \zone\hate_list.h(69) \zone\hate_list.cpp(563)
+	- <int TopDamageRatio();> returns percent of total damage by top damage dealer - \zone\hate_list.h(70) \zone\hate_list.cpp(578)
+	- added to <NPC::Death> the above functions, additional code and logging features in various places - \zone\attack.cpp(2148,2174,2195)
+
+Fixed <NPC::Death> as loot and XP awards were still being given to the entity with the killshot - \zone\attack.cpp(2143,2355)
+
+Added code to <case PET_TAUNT_ON:> to essentially turn it into a switch and allow players to turn taunt off - \zone\client_packet.cpp(10011)
+	- the previous function was likely due to different UIs between clients
+
+12/22/15
+
+Fixed crashing issue with buffing NPCs and casters being non-existent with buff stacking code <Mob::CheckStackConflict> - \zone\spells.cpp (3151,3162)
+
+Created rule <RULE_INT(Character, PetExpDamageLimit, 50)> to limit xp gains to pet damage under 50% - \common\ruletypes.h(44)
+	- if a single pet does more than 50% damage to a single NPC, no xp is awarded
+
+12/21/15
+
+Added rule to allow/not allow stacking of same DoT spell by different players - \common\ruletypes.h(364)
+
+Implemented above rule to <Mob::CheckStackConflict> - \zone\spells.cpp (3065)
+
+Altered forage code to not have `mushroom` a common foraged item - \zone\forage.cpp(379) \zone\forage.h(23)
+	- Changed <MAX_COMMON_FOOD_IDS> to 7 from 8
+	- commented out section where `mushroom` (14905) could be chosen
+	- created query to populate table `forage` with `14905` (mostly luclin expansion)
+
+Altered fizzle mechanics to make stats affect the chance more and increased minimum chance to fizzle to 5% - \zone\spells.cpp (847)
+
+Added rule to toggle allowing single-target spell to overwrite it's group-target counterpart - \common\ruletypes.h(365)
+
+Implemented above rule at <Mob::CheckStackConflict> - \zone\spells.cpp (3169)
+
+Implemented buff stacking code to <Mob::CheckStackConflict> - \zone\spells.cpp (3151)
+	- a old buff will not be overwritten by a new buff with identical effects if the new buff has a shorter duration
+
+Created rule <RULE_BOOL(Pets, RandomLevel, false)> to enable Classic style pet random levels - \common\ruletypes.h(165)
+	- not implemented
+
+12/20/15
+
+Organized code a little better in a few locations - made easier to read - locations unnecessary to note
+
+Added code to <Mob::CheckStackConflict> which will not allow regen spells to land if the negative effect is currently active - \zone\spells.cpp(3082)
+	- DRU magic dots, NEC darkness and ignite dot lines are the main inhibiting spells
+	- the fix is mainly due to UI issues
+
+12/19/15
+
+Implemented a "swimming_timer" to reduce the skill increase checks on swimming  - \zone\client.h(1464) \zone\client.cpp(128) \zone\client_packet.cpp(4503)
+	- previous skill increase checks were checking about 4 times per second
+
+Altered <Spawn2::Process()> to disable spawn2 checks for spawngroupid if all NPCs of `spawngroupid` in `spawnentry` table have chance = 0
+	- prevents unnecessarily looping the timer - efficiency fix long suspected of need - \zone\spawn2.cpp(180)
+
+12/18/15
+
+Changed proc function equations and conditions in function <GetProcChances> - \zone\attack.cpp(3969)
+	- DEX 255 max bonus for 100% - DEX 0 = -50% - DEX 75 = baseline
+	- changed DB `rule_value` <AvgProcsPerMinute> = 1 and <ProcPerMinDexContrib> = .00555555
+
+12/17/15
+
+Altered/added several things about HT/LoH and how it works, fixing both:
+	- Changed LoH(87) spells_new.formula in code and DB - it's a bit worse at lower levels and a bit better at higher levels - \zone\spell_effects.cpp (3295)
+	- Added code to <Mob::GetActSpellHealing> to add 50% to all NPC cast LoH above lvl 40  - \zone\effects.cpp(297)
+	- Added and altered code which checks if LoH/HT is to be cast - if the NPC was casting something else it would waste these abilities -\zone\special_attacks.cpp (1736)
+
+12/16/15
+
+Commented out section of code in <Mob::GetActSpellDamage> to correct all <HARM_TOUCH> values - \zone\effects.cpp(127)
+	- appears to be an unnecessary line which reverts spell damage to a previous value
+
+Added `SPELL_NPC_HARM_TOUCH` to <Mob::GetActSpellDamage> to have NPC HT act like PC HT - \zone\effects.cpp(56)
+
+12/14/15
+
+Added and commented out code for <Client::Handle_OP_SenseHeading> to give a much higher chance to skill up at skill levels up to 50 - \zone\client_packet.cpp(341,11773)
+	- the previous code which was supposed to do this was flawed
+
+12/11/15
+
+Created rule to enable old dispel mechanics <RULE_BOOL(Spells, EnableOldDispellMechanics, false)> - \common\ruletypes.h (363)
+	- not implemented - implemented 1/27/16
+
+Added code to function <void Mob::DoBuffTic>, <SE_CurrentHP> for condition where NPC or NPC corpse does not exist (zoned/looted) - \zone\spell_effects.cpp (3483)
+	- dots of non-existent casters in zone did not have any effect previously
+	- used same code as other condition but left out parts where it checks `caster` due to not having one under these conditions
+
+12/10/15
+
+Fixed bugs created by altering fear/flee code - \zone\attack.cpp (1420,3877,3944)
+	- eliminated checks for clients except at fear spell break - \zone\fearpath.cpp (34)
+
+Added code to <Mob *HateList::GetEntWithMostHateOnList(Mob *center)> to create unbreakable low-hp aggro - \zone\hate_list.cpp (390)
+	- overrides the rule regarding low-hp aggro and allows DA and other effects to get checked first
+	- if more than one char has low hp, the npc appears to stay on the target with most hate
+
+Tweaked equation for resurrection hp to <SetHP(((GetMaxHP() - itembonuses.HP) /4) + itembonuses.HP);> or 25% - \zone\client_process.cpp (1186)
+
+12/9/15
+
+Added to function <int Mob::_GetFearSpeed() const> for better fear/flee speed scaling - \zone\mob.cpp (702)
+	- tweaked/changed existing equations
+
+Added code to the flee system for better reaction to hp+/- - \zone\attack.cpp (1420,3877,3944)
+	- altered <(CheckFlee()> function to work with above changes - \zone\fearpath.cpp (34)
+
+12/8/15
+
+Commented out section of code which adds keys to the keyring to disable keyring <void Client::KeyRingAdd> - \zone\client.cpp (3900)
+	- added message indicating keyring is disabled, keys are still soulbound
+
+12/7/15
+
+Added code <CheckFlee();> in two places to make NPCs flee after fear breaks if conditions of checkflee are met - \zone\spell_effects.cpp (3599,4002)
+
+Organized code a little better in a few locations - made easier to read - locations unnecessary to note
+
+Changed/rewrote the majority of the function <int Mob::_GetFearSpeed() const> for snare/sow/flee/fear conditions - \zone\mob.cpp (702)
+	- added logging features to assist in tweaking the equations/conditions
+
+Added function <bool Mob::IsSnared()> and accompanying code - this function does not currently work	- \zone\mob.cpp (382,3378); \zone\mob.h (455,802,1188)
+	- this was to assist in completing the changes to <int Mob::_GetFearSpeed() const>
+
+Changed equation for resurrection hp to <SetHP(((GetMaxHP() - itembonuses.HP) /5) + itembonuses.HP);> or 20% - \zone\client_process.cpp (1186)
+
+12/5/15
+
+Added code to <NPC::Death> to make NPC corpses poof if kill shot came from NPC - \zone\attack.cpp(2326)
+	- some of the code is likely redundant but, it works - removed some/most redundancies
+	- added notes describing the process within this function in other areas
+
+Fixed code in <NPC::Death> function	which was improperly giving xp to the PC with the kill shot rather than the most hate - \zone\attack.cpp(2135)
+	- I made this error with previous changes
+
+12/4/15
+
+Created and implemented rule to toggle DoT damage message - \zone\attack.cpp (3845)
+	- <RULE_BOOL(Spells, DoTDmgMessageOn, true)> - \common\ruletypes.h (361)
+
+Reverted commented out section of code which removed SPELL_WORN_OFF_OF message - \zone\spell_effects.cpp(4094)
+
+Created and implemented rule to toggle SPELL_WORN_OFF_OF message - \zone\spell_effects.cpp(4087)
+	- <RULE_BOOL(Spells, WornOffMessageOn, true)> - \common\ruletypes.h (362)
+
+Reverted distancemod coefficient for channeling function to <distancemod = distance_moved * 25;> - \zone\spells.cpp (1171)
+	- I originally misinterpreted the equation
+
+12/3/15
+
+Created rule <RULE_BOOL(Spells, DoTDmgReductionIfMoving, false)> to switch dot damage when moving for NPCs - \common\ruletypes.h (360)
+
+Implemented above rule - \zone\effects.cpp (209)
+	- damage equation may not be correct but easily changed
+
+12/2/15
+
+Changed tracking coefficient in code to decrease rate of skill increase - /zone/client_packet.cpp (13214)
+	- <checkincreaseskill> -10 from 15
+
+Removed taunt failure message by commenting out portions of code calling for the message - \zone\special_attacks.cpp(2160,2214,2219)
+
+12/1/15
+
+Created rule to limit client versions from logging into server (world) - /common/ruletypes.h (173)
+	- purpose is to ease changes made to code and to eliminate features present on newer clients
+	- <RULE_BOOL(World, LimitClientVersion, false)>
+
+Implemented above rule - /world/net.cpp (446)
+	- this could be tweaked a bit for efficiency
+
+11/25/15
+
+Fixed channelling crashing issue with character with skill 0 - \zone\spells.cpp (1108)
+	- added 0.001 to equation to eliminate zero divisor - hack
+
+10/16/15
+
+Added code to <bool NPC::Death> in to eliminate xp gain from other npcs making kill shots - \zone\attack.cpp(2135)
+
+Implemented class/race exp penalties with rules - courtesy of Cilraaz - \common\ruletypes.h(91) \zone\exp.cpp(687)
+	- <RULE_BOOL(Character, UseOldRaceExpPenalties, false)> <RULE_BOOL(Character, UseOldClassExpPenalties, false)>
+
+10/15/15
+
+Implemented a new formula for <channelchance> which bases channel success on proximity to max skill per level
+	- this can mitigate very low channel success rate at low levels, somewhat - \zone\spells.cpp(1108) \zone\client.h(695)
+	- also changed the coefficient to alter <channelchance> based on how much the player moved - it was not working properly - \zone\spells.cpp(1171)
+
+10/13/15
+
+Implemented two rules to limit max experience gain - \zone\exp.cpp(322)
+	- <Character:MaxExpGainForKill> and <Character:MaxExpForKill> - \common\ruletypes.h(42)
+
+10/9/15
+
+Implemented <RULE_BOOL(Skills, TrainCastingSkills, false)> for skills:
+	- meditate, all specializations
+	- files: \zone\spells.cpp(592), \zone\client_mods.cpp(1274)
+
+Changed meditate `CalcManaRegen` and `CalcBaseManaRegen` formula to something a little more forgiving at lower levels - \zone\client_mods.cpp(1289)
+
+Implemented <RULE_BOOL(Skills, TrainMeleeSkills, false)> for skills:
+	- riposte, parry, block, dodge, bash, kick, backstab, monk special attacks, frenzy, DualWield, DoubleAttack
+	- files: \zone\attack.cpp, \zone\special_attacks.cpp, \zone\client_process.cpp
+
+Implemented <RULE_BOOL(Skills, TrainUtilitySkills, false)> for skills:
+	- ApplyPoison, Tracking, DisarmTraps, FeignDeath, Hide, SenseTraps, SafeFall, Sneak, PickLock, Forage, PickPockets, Intimidation
+	- \zone\spells.cpp, \zone\special_attacks.cpp, \zone\npc.cpp, \zone\forage.cpp, \zone\doors.cpp, \zone\client_packet.cpp
+
+10/8/15
+
+Added three rules to control skill training <(Skills, Train<type>Skills, false)> - \common\ruletypes.h(150)
+
+10/6/15
+
+Created a rule and implemented rule to toggle `lastname`
+	- rule added to - \common\ruletypes.h(461)
+	- implementation by adding code at - \zone\zonedb.cpp(2056)
+
+10/3/15
+
+More rework of pet rule implementations
+	- removed lines from `Client::BulkSendInventoryItems` - \zone\client_process.cpp(848)
+	- added lines to `ZoneDatabase::DeletePetInfo` - \zone\zonedb.cpp(3091)
+
+10/1/15
+
+Yet another rework of pet rule implementations - works almost perfect
+	- reverted \zone\client_process.cpp(848) and \zone\zonedb.cpp(3177)
+	- added lines to - \zone\client_process.cpp(848)
+	- added lines to - \zone\zonedb.cpp(3091)
+	- added lines to - \zone\zonedb.h(257)
+
+9/30/15
+
+Rework of pet rule implementations
+	- reverted <\zone\zonedb.cpp(~3177)> to original file - \zone\zonedb.cpp
+	- added lines to - \zone\client_process.cpp(848)
+	- added lines to - \zone\zoning.cpp(192)
+
+9/29/15
+
+Added <RULE_BOOL(Character, FullManaOnLevel, false)> - \common\ruletypes.h(54)
+
+Added to <void Client::SetLevel> for implementation of above rule - \zone\exp.cpp(614)
+
+Added <SetMana(CalcMaxMana());> for death mana CH - \zone\zoning.cpp(617)
+
+9/28/15
+
+Added two rules <Pets:PetZonePersistence> and <Pets:PetLogPersistence> - \common\ruletypes.h(~151)
+
+Added code to make pets poof on zoning and poof after 30 minutes logged out which works in conjunction with the rules above - \zone\zonedb.cpp(~3177)
+	- this may not be the most efficient way to do this
+	- I'd like to account for one circumstance - player logging out and back in with PetZonePersistence = false and PetLogPersistence = true
+		- currently the pet poofs but I'd like to change this to not happen
+
+Made pets poof after any rez - added very simple line of code which took too long to find - \zone\client_process.cpp(1186)
+
+9/27/15
+
+Changed `GetKickDamage` and `GetBashDamage` formulas which calculates max kick/bash damage - \zone\special_attacks.cpp(33 & 52)
+	- new governing formula is based solely on skill and steps to even INT values
+
+Commented out section of code which creates client emote for SPELL_WORN_OFF_OF - \zone\spell_effects.cpp(4094)
+	- checked other areas and does not appear to affect anything else
+
+Made spell casting specializations require training - \zone\spells.cpp(591+)
+	- unsure if this has always been the case in earlier eras; may not be necessary
+
+Fixed meditate skill increase for med skill below 12 - \zone\client_mods.cpp(1289)
+	- forgot to add lines for this
+
+Commented out section of code which creates client emote for Spellshield - \zone\attack.cpp(3563)
+	- also commented out line adjacent to remove `cast_on_other` message
+	- almost certain the first change is fine but, uncertain if the second will have side effects
+
+Made a rule for combat damage between level 20-29 - \zone\tune.cpp(620) | \zone\attack.cpp(1245)| \common\ruletypes.h(426)
+
+9/26/15
+
+Fixed `CheckIncreaseSkill` modifier formula - \zone\client.cpp (2293)
+	- large project to change governing formula for skill increases
+	- some tweaking could be done
+
+9/25/15
+
+Fixed Lay on Hands Paladin ability - \zone\special_attacks.cpp(1721)
+	- to fire at < 30% hp rather than < 20%
+
+9/24/15
+
+Fixed `CalcBaseManaRegen` and `CalcManaRegen` to remove extra mana per tick standing - \zone\client_mods.cpp(1263 & 1289)
+	- also changed formula to reflect mana regen from an earlier era
+
+9/23/15
+
+Fixed `SetClassStartingSkills` to reflect earlier era values  - \world\client.cpp(~1789)
+	- basically a complete overhaul of starting skills
+	- removed max skills on char create
+
+9/21/15
+
+Changed and reverted `SenseHeadingStartValue` and other rules - \common\ruletypes.h (~148)
+	- first revision of code and compile, ever

@@ -1,0 +1,456 @@
+** a semicolon before the item indicates completion
+
+**	7_30_15_peq and 7_30_15_jeryds are closest backups before the most recent source update located in backups folder or external HD
+	8_3_15_jeryds is jeryds backup prior to new usable db construction - 8_3_15_peq is a standard backup
+	new backups are dated accordingly and put in backups folder or external HD **
+
+*** New file type because the ToDo list before each new changelog was taking up a ton of space
+	This is used as a reference and checklist - this list is added to when a new <date>_changelog_todo file is created ***
+
+***	Starting 1/24/16 the ToDoList will be organized and used a bit differently.
+	First, there are several categories of items to do. These are listed below to jump to the category easier.
+	EXPANSION SCRIPT ADDITIONS are particularly important to complete asap and, although DB WORK, deserve their own category.
+	Progress notes can be added into this file to reduce searching in multiple files.
+	A semicolon before "ToDo:" indicates completion ***
+
+- EXPANSION_SCRIPT_ADDITIONS
+- DB_WORK
+- CODE_WORK
+- QUEST_MAPS_WORK
+- WEBSITE_WORK
+- FEEDBACK_RESEARCH
+- LEGACY_ITEMS_NPCS
+- UNCATEGORIZED
+- STUMPED_ISSUES
+- NON_ESSENTIAL
+
+
+........................
+- EXPANSION_SCRIPT_ADDITIONS
+........................
+ToDo: created queries for the majority of player data tables to be used to delete from the table - unfinished - 1/28/16
+	- this is unfinished busy work and currently not necessary but with a population will become necessary
+
+........................
+
+........................
+- DB_WORK
+........................
+ToDo: Pets:AttackCommandRange seems low - tinker with this - 12/23/15
+
+ToDo: need to go through `Planes` expansion to edit data (npcs specifically) - see 10/4/15
+
+ToDo: Changed loottables for: find in loottable WIP - see 12/11/15
+
+ToDo: fix spawn2 near safe zone points in soldunga - NPCs have bad coords in spawn2 - 12/15/15
+
+; ToDo: Classic style pet random levels - \zone\pets.cpp(244) - see 9/28/15 - backburner - rule created 12/21/15 - some work done see 1/28/16 - complete unbelievable - 2/11/16
+	- mostly DB work and a little code work
+	
+ToDo: need to account for spells which create a buff which can create a proc in DB generation - 12/18/15
+	- recourse spells completed, may need to check for different conditions for above
+
+ToDo: alter loottables for "Legacy" items - 12/8/15
+
+ToDo: put more crag spiders on crag hill in EK - 12/10/15
+
+ToDo: Spells_new.expansion project - 10/17/15
+
+ToDo: check into small bronze for unrest - see 10/22/15
+
+ToDo: set all epic 1.0 npcs and items to join with hole DB (expansion 1.5) - many complete/more updates to occur as they are found - WIP
+
+ToDo: expansion queries - anything which includes a setting for expansion should also include the negative value for that expansion if not already in place - need to think about this a little more - good way to set expansion on NPCs/items/etc which may not be set
+
+ToDo: change despawn timer to 0 for npcs which should not despawn - see 9/5/15 - process described 9/9/15 - complete for original 9/13/15 WIP
+
+ToDo: All npcs need a boost in AC and hp (hp moreso) - test changes with research - make small changes - WIP
+
+ToDo: Look over coin drops and lower amount overall - do in racial groups by zone - do not do expansion generic changes - see 9/11/15 WIP - mostly done 1/27/16
+
+ToDo: Revamp other zones with cazic as a guide - see 9/5/15 for list and 9/6/15 for cazicthule - nurga/droga mostly complete - see 10/13-14/15
+
+; ToDo: make giant spiders social - maybe - done 1/25/16
+
+; ToDo: increase poison sac drops on NPCs that poison - by making new loottables - done 1/25/16
+	- moreso for snakes, spiders give silk
+
+; ToDo: giant scarab in EC - guards don't attack - need to recheck this, test shows as attacking <- confirmed
+
+; ToDo: rethink pelt drops, ruined,lq,mq,hq = 8,4,2,1 in terms of drop frequency - maybe 6,3,2,1 - may need tweaking but done - 1/26/16
+	- HQ drops too often off low mobs, MQ even more - unless I am lucky
+	- lower drop rates on pelts!! - specifically MQ/HQ
+
+ToDo: fix stagnant mobs in west karana, no animals should be stagnant
+	- created query to make grids when ambitious in WIP folder `qey2hh1_mundane NPCs~`
+
+ToDo: fix stagnant mobs in freporte, no animals should be stagnant
+	- use above queries
+
+ToDo: squire's friend is nowhere to be found on P99(roaming?)EK - I think he roams from up near crag hill down to the bridge - confirmed
+
+ToDo: crag spider funny roaming pattern EK - sgid 6566
+
+ToDo: forge in nfp near shop - it's in the DB but not in game - don't know why it's not showing up
+
+ToDo: noob zone guard + NPC are kos P99 - paineel
+
+ToDo: abandoned heretic pet is dubious to ranger p99- tox
+	- grid by paineel needs work
+
+ToDo: muddites and goblins appear to get along - gorge P99
+	- seems they are on the same faction
+
+ToDo: kos mobs aggro even if green - make some stupid
+
+ToDo: nro - more rattlesnakes less spiders P99
+
+ToDo: west commons - put a griffon in
+
+ToDo: consider raising the prices of merchant 50+ spells
+
+ToDo: Feerrott - `dark_assassin` has no spawn entry but roams western feerrott and is a quest
+	- did not check NPC/spawns near fear
+
+; ToDo: almost no early level mobs should have any regen over 1 - complete for original 1/29/16
+	- found explanation - <CalcNPCRegen();> - sets NPC regen if 0 in the DB - \zone\npc.cpp(2047)
+	- this means the field should be set, otherwise the code will set it for us
+	- hp_regen_rate was significantly reduced from the default code - should request feedback
+	
+ToDo: shady/evil efp freeport faction is few for ranger (not many dubious or worse)
+
+ToDo: asps in ecommons instead of rattlesnake? - not an issue
+
+; ToDo: check on archery skill max for rangers, titanium has it at 200 at 50 - done 1/15/16
+
+ToDo: splintering club different expansion?
+
+ToDo: dazed goblins in runnyeye - no mobs with capital letters
+
+; ToDo: fix zone_points where the log files show errors - 1/21/16 - mostly done 1/31/16
+
+; ToDo: consider making willowisps not kos to guards - 1/21/16 - done 1/29/16
+
+ToDo: plains pebble seems to forage quite a bit - 2/4/16
+
+ToDo: other mobs do not aggro if the one is running away and not the same faction WIP - 2/4/16
+
+ToDo: lvl 4 mob - no xp/aggro at lvl 8 but lt blu at lvl 9 /aggro lvl 10 xp and green - 2/4/16
+
+
+........................
+........................
+- CODE_WORK
+........................
+; ToDo: need to keep the zones static for a minute or two after players leave for their safety and to reduce exploiting - 1/21/16 - complete 1/25/16 - fixed 2/12/16
+
+; ToDo: change how dispels work to old way - need historic confirmation - 12/10/15 - complete, I think - 1/27/16
+
+ToDo: NPCs/Pets fall through the floor in old arena - likely a map file although pathing may fix this? - 12/26/15
+
+ToDo: CaclMaxMana occurs twice per tick for PCs - sometimes twice, sometimes once, process acts funny - 12/11/15
+
+; ToDo: think about making a rule for dot worn off message - 12/23/15 - done 1/27/16
+
+ToDo: work out berserker frenzy bonus/penalty - 12/23/15
+
+; ToDo: look into kick/bash damage a bit more - 9/27/15 - be prepared to use newer formula and possible revert code and make a rule - backburner - make a rule for this - complete - 1/27/16
+
+ToDo: fix backstab - see 9/27/15, 10/11/15, 2/29/16
+
+ToDo: find solution to boats lagging zones - see 10/4/15, 10/6/15, 12/19/15
+
+ToDo: Fix mana/end levels lower after zoning - only in the UI - casting a spell syncs UI with server - see 10/12/15 - many unsuccessful tests 12/14/15, 12/18/15 - 2/4/16
+	- poss solution to mana/end lower on death - look for similar -> <Group::SendHPPacketsTo> - \zone\groups.cpp(384)
+
+ToDo: look into - Songs do not go in song window - 12/20/15
+
+ToDo: look into resists - torven (eqemu) data - 12/20/15
+
+ToDo: Think about leaving NPC pets up if their owners die - 12/29/15
+
+; ToDo: Consider creating/implementing a rule which limits xp if in group and pets do more than X % damage - 12/29/15 - unnecessary 2/12/16
+	- apparently this isn't needed but a rule reducing XP if pet does 50%+ damage while not in group - make a rule - done 2/4/16
+
+; ToDo: removed message about the item you are missing from tradeskill combine attempts when missing a component - 1/28/16
+	- this may be unnecessary if I can disable the newer UI
+	- unnecessary with rules set as they are - newer UI combines disabled
+
+; ToDo: mobs hop if engaged at their spawn point - fixed hopefully - 1/24/16
+	- I think it has to do with guard point - it did but, it was he fixZ rules that made it better
+
+; ToDo: check on double attack rates for NPCs - they get a twenty level boost at the current setting
+	- <NPCDualAttackModifier> - \common\features.h(174)
+	- the question may not be if they do it too often but if DA is high
+	- another option is to lower this check for certain level mobs, maybe under 20
+	- suspended this issue because I was seeing frontal backstab attempts
+
+; ToDo: think about raising the flee speed at 15 -20% P99 appears to have it higher - see 1/27/16
+
+ToDo: con levels off by 1 at least up to 12, I think it goes half level up to then at least
+
+ToDo: sneak and buying from merchants, I thought you had to be behind before sneak
+	- find out if sneak never fails (\zone\client_packet.cpp(12687) 1/28/16
+	- sneak was fine in with test in tox
+	- sneak fails but you can sneak THEN go behind someone and it will work
+	- hide works if it succeeds and it doesn't matter if you are in front or not
+
+ToDo: when client goes linkdead the zone server doesn't drop the client for 3 minutes - this is normal
+	- the entire process from client crash to zone dropping client took 5 minutes
+	- unsure what that means but there may be a link with spawning as a mob name
+		- this happened in the middle of a battle, the DB and log showed the mob correctly, it is something with the client 2/4/16
+		- this issue was happening before the static zone changes
+	- maybe this could be the way to limit players from /q out
+
+ToDo: Client crashed twice in short time when I clicked items to looting the loot window - poss related to above
+
+ToDo: item dropped on lift stays suspended where dropped
+
+; ToDo: archery should probably have LoS - use spell logic - complete - 1/27/16
+
+ToDo: issue with player names turning into spawn names after death
+
+; ToDo: from fear pathing, mob will occasionally die and his corpse will fall under the ground - fixed 2/11/16
+	- west karana mobs fall through the ground - seems to happen when going up/down 'z'
+
+ToDo: look into group code - groups seem to disband - thought I heard something about eqemu code fixing this - not - fixed disbanding issues (the worst) - several minor issues remain
+	- add logging features in various places to monitor what's going on
+	- pet hp do not show actual % to other group members, occasionally
+	- poss issue with disbanding self - fixed
+	- areas to look for disband issue <Client::LeaveGroup()>, <Group::DisbandGroup()>, <Group::DelMember>, <Group::DelMemberOOZ> - \zone\groups.cpp
+	- Fixed the majority of disbanding issues with groups larger than 2 <Group::DelMember> - \zone\groups.cpp(614,637)
+		- commented out 2 sections of code
+		- creating logging features in many places to understand and find the issues - \zone\groups.cpp(547,584,886,1163) \zone\client_packet.cpp(6333)
+		- not all issues were resolved - when resolved the logging features should be removed/disabled
+	- leader disbanding in a zone with no other group members does not transfer leadership
+		- this and a few other minor issues are described in `group invite_disband mechanics.txt`
+	- reverted the logging features (moderate) until the next round of fixes
+
+ToDo: fizzles seemed a bit high - additionally, the high level code doesn't seem to give any weight to skill differences ie. <diff> - tweaked and seems better so far
+	- I should change this with the channelchance idea in mind
+ToDo: fizzle rate seems a little harsh maybe lower it 5% overall or change stat influence, maybe make a rule for base fizzlechance as well - changed
+	- lower the min chance to 8% adn stat to 6 or something similar to channelchance where you get a bonus the closer to the skill cap you are - changed
+	- basefizzle set to 12 and stats influence to 8 - rate is better at lower levels
+	- consider adding another condition similar to channelchance
+	- fizzle chance gets lower as char levels in lower levels, at least
+	- added fizzle mod to subtract an amount based on proximity to spell level skill (level 9 spell level skill = 50)
+	- Added additional code to <Client::CheckFizzle> to help mitigate high fizzle rates - \zone\spells.cpp(902)
+		- this applies when skill is within 10 points of the "spell cap" - spell level * 5 + 5
+	- issue with specialization and lowering fizzlechance too much - guessing the altered basefizzle value
+	- work on channelchance equation it just doesn't seem right to penalize players when gaining a level - 1/28/16
+	- the skill range could be greater to mitigate the "penalty" to the bonus
+	- major fix to rates lvl 21+ on 2/9/16
+
+ToDo: group level range for xp is funky - groups in general are a little funky - see `group experience` in WIP
+	- \zone\attack.cpp(2267) points to xp, qs logging and kill credit, I doubt there are any issues with these
+	- I don't think the issue is with the exp code, it's likely somewhere in the group code although tweaking the xp code isn't a bad idea
+	- the anti-PL code could use some tweaking with xp rates as low as they are - \zone\exp.cpp(894)
+
+ToDo: speed test - used #distance command - was DB todo now CODE
+	- there appears to be some catchup "on-tick"
+	- on local test server the mob appears to lose ground then catch up, likely due to server lag or ticks although tested on local
+	- characters appear to follow at the same distance
+ToDo: as far a speed and npcs catching when they are clearly a tiny bit slower:
+	- guessing pc speed uses the z to calculate distance where mob speed does not
+	- reduced speed of NPCs as a temporary, long term fix - get back to this later maybe
+	- speed seems pretty good now although mobs are a bit slow - 2/6/16
+
+ToDo: see if I can disable maps outside of noob zones
+	- couldn't find anything on this in the code - there are updates going on, just unsure where it's happening
+
+; ToDo: Consider putting code in to have the chance of skill increases adjusted based on relative difficulty of the skill at the time of use - 1/21/16 - see 1/29-31/16
+	- for melee skills this would be mob con level
+		- successful hits/dodges etc give an increased chance
+	- for casting skills this is would be current skill vs level "/con" of current skill vs spell level skill
+	- change certain melee skills to only check for increases if successful, like on a hit
+	ToDo: put check increase skill in for all skills similar to tradeskills - see 1/27/16
+	- also add in con levels chances
+	- large project complete 
+
+; ToDo: too much aggro on regen spells - 1/28/16 - see 2/12/16 - fixed with all the aggro changes 2/18/16
+	- aggro = spell mana / 4 * players affected (this part is a guess)
+
+ToDo: Accuracy: the level diff accuracy curve should look hyperbolic or maybe similar to the -cube root function used for skills - 1/28/16
+	- forgot to think about how skill should continue to give a negative affect to accuracy if the max skill does not compare equally to the melee classes
+		- H2H is a good example - casters' max weapon skill is another
+
+ToDo: Have the zone update when a player enters it - 2/4/16
+
+ToDo: try to figure out how to stop /played timer when char logs out differently - look here -> \zone\client_packet.cpp(1334) - 2/4/16
+
+ToDo: something was funny when I failed making metal bits, the result was one bit on the cursor but, it didn't seem to add to the existing stack - 2/4/16
+
+ToDo: remove shared bank and extra bank slots - 2/4/16
+
+		
+........................
+........................
+- QUEST_MAPS_WORK
+........................
+ToDo: treant in the middle of the road in EK - moved near druid rings
+	- need to work on quest late 2000 is first instance
+
+; ToDo: the path file made the young kodiak go to it way out of the way in EC - done 2/4/16
+	- maybe moving just the nodes which are in the open will fix this
+	- removed all .path files in outdoor zones
+	
+........................
+........................
+- WEBSITE_WORK
+........................
+ToDo: make a "requesting feedback" thread on the website
+
+ToDo: work on "tips"
+
+ToDo: tips: to gain separation while fleeing, jump a couple times - 1/21/16
+
+ToDo: mention how once per week at 1am hawaii time they bounce the modem - 2/4/16
+
+........................
+........................
+- FEEDBACK_RESEARCH
+........................
+ToDo: look into how spell crits were calculated (ie +100% or a range up to 100%) - 12/16/15
+
+; ToDo: look into variable dot damage in classic - function added; verify 2/3rds rule for NPC moving and DoT damage - function added; Determine which/how the spell_worn _off message is/if used - rule added - 12/4/15 - new rule implementation and reversion of of old rule - complete 2/4/16
+
+ToDo: Check zone lag of boats with other players - 12/19/15
+
+; ToDo: casting skills acquired after level 1 currently do not require training - verifies through canis, 1 source although it seems logical
+	- I think this is fine, meditate requires training IIRC but, ask around, would probably be a simple fix
+
+ToDo: look into DS damage and XP
+	- kevin said character must do 1 point of damage which makes sense iirc
+
+; ToDo: verify stun fix - mob kick stunning character - ask around - fixed with new rule done - 2/4/16
+	- npc kicks have a chance to stun always (15% like bash) - \zone\attack.cpp(3716)
+	- need to verify how this works somehow
+	- made a NPC level rule with current % to easily switch if level is incorrect - complete
+
+ToDo: faction in general
+
+ToDo: fizzle fix, although my logs show plenty of data
+
+ToDo: was undead kith part of classic? when did it happen? - 1/21/16
+
+ToDo: ask about regen of mundane NPCs particularly higher level - 1/28/16
+
+ToDo: find out if crit hits were 1.7 of max damage - 1/28/16
+
+ToDo: tradeskills - small deities don't come out until?? at least 0.5 - 1/28/16
+
+ToDo: ask about aegis of life quest and expansion and alter lord_grimrot's loottable with both pestilence scythe's - 1/28/16
+
+ToDo: skull ale from undead cyclops in SK classic? - removed until I find out - 1/28/16
+
+ToDo: remove interrogator from SK and other places if not expansion - 2/4/16
+
+ToDo: NPCs are stupid in lake rathe, kithicor, is this intentional? - 2/4/16
+
+ToDo: feedback: should NPC pets give xp? - 2/4/16
+
+ToDo: see if ghoul root can break early - it seemed to - 2/4/16
+
+ToDo: having a hard time understanding why other players can get the shared bank but not my players on RtN - 2/4/16
+
+
+........................
+........................
+- LEGACY_ITEMS_NPCS
+........................
+ToDo: j-boots and rubicite look into
+	J-Boots:
+	- j-boots is on a fabled NPCs loottable (expansion 7)
+	- Hasten_Bootstrutter in Rathe Mts - spawn condition 2 w/e that means - C:\EQ\EQEmuServer\quests\rathemtn
+	- ancient cyclops 8% in Nro and 20% in OOT
+	Rubicite:
+	- the items are enabled although not all pieces drop from current NPCs
+	- will need to consider balance, current drops are a quite high
+
+ToDo: spawns? - kracken lake rathe - mayong mistmoore - mistmoore
+	- no kracken
+
+........................
+........................
+- UNCATEGORIZED
+........................
+ToDo: Skill # 76 is listed with values for classes 1, 4, 7 ???
+
+ToDo: create noob shirt quests - some not in quest folders - or give the same note to similar class/race combos - WIP
+
+ToDo: projects in WIP folder - ongoing
+
+ToDo: Look into light source for split paw hide mask - currently it's a huge radius - 12/11/15
+
+ToDo: look into making the world darker at night - 12/21/15
+
+ToDo: <skilldisarm> does not appear to be implemented - 12/29/15
+
+ToDo: Can't spawn mobs in the arena for some reason - this is very recent and may have something to do with the "Z" rule - 1/21/16
+
+ToDo: ward undead should not resist so much - I think this a resist issue and not a spell issue - 2/4/16
+
+ToDo: mobs runspeed seems a touch slow now - 2/4/16
+
+ToDo: did faction get reverted?? - 2/4/16
+
+
+........................
+........................
+- STUMPED_ISSUES
+........................
+ToDo: make ability timers reset if unable to use (kick/bash/range attack) too close/too far/self - \zone\special_attacks.cpp(208,711) - unsure if this is possible
+	- range attack: - I'm skeptical the button being greyed out or not is something this code can change, I believe it is a client thing
+		- 1with no target the button is not disabled
+		- 2with a target too close, even if not facing, the button is disabled
+		- 3with a target that is not self and not facing the target or is far out of range, the button is not disabled
+		- with a target just out of range, the button is disabled -> this likely occurs due to movement and client/server not being exact
+	- possibly not <Client::OPCombatAbility> - \zone\special_attacks.cpp(436)
+		- ptimer
+
+ToDo: Skill which can't be acquired show up in the client UI - probably a dbstr.txt file in the client
+	- eqstr_us.txt is the file - <2161 LEVEL: %1>
+	- unable to locate anyplace in the code which would affect this
+
+ToDo: issue with improper plat being recorded in `qs_merchant_transaction_record`
+	- and improper charges in `qs_merchant_transaction_record_entries
+	- I don't see a way to make this better - I looked through the area of code
+
+ToDo: put a death animation in for /pet go away - 1/21/16
+	- no luck with changes
+	
+........................
+........................
+- NON_ESSENTIAL
+........................
+ToDo: for Adam: work on NPC appearance w/ DB - many GMs, merchants, etc. - they are default ugly - 12/15/15 (fuck him slacker bitch)
+
+ToDo: custom titles for characters who do something special - 12/30/15
+
+ToDo: Look into PVP code - certain dots, maybe with snare component, in PVP have very short snare duration and keep the damage for full duration - 12/20/15
+
+ToDo: create trivial loot code with cazic thule in mind (rubicite)
+
+ToDo: for Adam: make same mobs in zone but different level vary in size (fuck him slacker bitch)
+
+ToDo: create something to suspend the account for a short period of time if /q-ing out
+
+ToDo: look into automatic guild membership to start with separate guild membership optional
+
+ToDo: think about creating expansion rules which would make it easy to switch code from one expansion to another
+
+ToDo: come up with a mob kill counter - like a tally of xp hits or qs NPC kills
+
+ToDo: IDEA: somehow create progression for each character as in: once they accomplish something they can move on to the next expansion
+
+ToDo: add logging features for GMs logging on multiple accounts or possibly qserv
+
+ToDo: think about creating a faction that if lowered, will decrease faction with the norrath scientists/dungeon necromancers - 1/21/16
+	- like a penalty if you kill too many citizens or guards
+	- would require creating a new faction, setting everyone to amiable or something, and populating the list with all guard/citizen factions
+	- this would also require putting this faction on all guard/citizen faction lists
+	- would also need to change the quests to only accept them at a certain faction level but never go kos
+
+ToDo: idea - have exploding corpses when looted causing damage (ae) - 1/28/16
+	
+........................

@@ -1,0 +1,475 @@
+a semicolon before the item indicates completion
+
+**	7_30_15_peq and 7_30_15_jeryds are closest backups before the most recent source update located in backups folder or external HD
+	8_3_15_jeryds is jeryds backup prior to new usable db construction - 8_3_15_peq is a standard backup
+	new backups are dated accordingly and put in backups folder or external HD **
+
+*** ToDo items are in the most recent `<date>_ToDo list.txt` file. ***
+
+See `1_24_15_ToDo List` for things needing to be addressed
+
+
+2/18/16
+
+need to start increasing hp on mobs over 15
+	- see graphs in `hp restructuring project` in WIP folder
+	- hp equations is standard/predictable up to level 39/40
+	- it changes after 40 and seems more erratic
+	- old equation of hp/level - x^2 + 10x where x = npc level
+	- new equation to use up to level 40 where x = npc level
+			(x - 15)^2 + 60(x - 15) + 375
+			x^2 + 30x - 300
+	- this is complete minus actual updating
+
+Aggro/Hate project:
+...................
+; look into spell damage/hate of lifetaps and clinging darkness
+	- darkness was "npc moving damage reduction" showing descrepancy
+	- lifetaps seem fine on hate/damage - not sure what I was seeing
+
+ToDo: KoS in general should add a bit more hate on intial add - other things may nullify this
+	- if hated, witness hate does not add the 25 if buffing (IMO it should if hated) - added code - need to test - done
+		- if kos add 25 if not normal
+		- Added to <Mob::SpellOnTarget> to add 25 hate on initial aggro if KoS and hate < 25 - \zone\spells.cpp(4026)
+			- not working - cast a ch on another and check hatelist to see how that function works
+			- target is recipient of heal
+	- witness hate to 66% chance maybe - done - works
+		- changed to 65% chance to witness
+		- Changed witness hate % to 35 from 40 in <EntityList::AddHealAggro> - \zone\entity.cpp(3108)
+	- If I want to add first contact spell hate for KoS similar to proximity go -> \zone\spells.cpp(4024) - not done
+ToDo: spell hate - will need look into these values and change them accordingly
+	- It doesn't make sense that HoTs only give 10 hate
+	- if this will be hate over time it will need to function similar to war discs or dots (ibufftic?)
+		- effectid = 100 (probably) spell_category = 21 (probably not)
+	- will also need to figure out how much hate is generated - the amount like normal heals (2/3) or something less? (1/2?)
+ToDo: Pet hate - done
+	- Pet hate appears to be about 1/2 max damage per swing. - add this - done
+		- possibly in <NPC::Attack> - \zone\attack.cpp(2010)
+; Added to <NPC::Attack> to make all NPC melee hate 1/2 of max damage - \zone\attack.cpp(2010,2065)
+	- also added hate to misses in this function which includes pet melee hate - according to Alkabor
+	- changed hate value on misses for generic <NPC::DoRangedAttackDmg> to maxdmg - assuming this is for NPCs - \zone\special_attacks.cpp(1437)
+
+	- moved and changed hate value on misses for other special attacks (back/kick/monk skills) in <Mob::DoSpecialAttackDamage> - \zone\special_attacks.cpp(152) - reverted
+		- this does not work, fuck
+			- need to test to make sure client kick/bash hate is not added twice
+			- need to test - one mistake then got it to working although if no damage is done no hate - I saw this somewhere
+				- still no miss hate - fixed
+	- hate value on misses for other special attacks (bash/kick/monk skills) - bash/kick fixed
+	- giving a pet a weapon currently does nothing for hate/damage - hate fixed
+		- need to get pet inv then get weapon damage figure hate into it
+		- \zone\attack.cpp(1241), <PetInfo>
+		- the DB table `character_pet_inventory` doesn't update unless zonign/logging and zoning makes the pet poof
+			- unsure if the items actually exist before logging/zoning
+			- they exist, they just don't show up in the DB until zoning/logging
+		- got pet hate to work when equipping a weapon which does more damage than regular attack
+			- hate works when equipped, weapon does less damage
+		- missed kicks/bashes don't give hate to pets
+	- pet will steal aggro from tank when in range - fixed
+
+; Added code to <*HateList::GetEntWithMostHateOnList> which sets top hate to client if client was in range and pet had more hate - \zone\hate_list.cpp(580)
+	- this was mistakenly omitted/lost in the process during the aggro revamp
+
+; Changed hate amount on a successful taunt when the entity is already on top hate to 0 from 12 in <Mob::Taunt> - \zone\special_attacks.cpp(2353)
+
+	- taunt seems to fail a lot when the level disparity is large although probably not enough
+	- taunt required training up until Veksar release (expansion 5.5 - May 14, 2003)
+	- should check Alkabor for taunt rules for % of success - likely in \zone\special_attacks.cpp
+
+.................
+
+2/19/16 - 2/20/16
+
+; Created two rules to limit the amount of logging of aggro data - \common\ruletypes.h(526)
+	- implemented rule into previously created log feature in <*HateList::GetEntWithMostHateOnList>
+	- zone\hate_list.h (91) \zone\hate_list.cpp(465,721) \zone\client.h(1475) \zone\client.cpp(220)
+	- needed to make adjustements
+
+; sync'd and updated RtN code and DB of note was mob HP
+
+Mob client updates on re-entry - incomplete
+....................
+test at entity.cpp(554) mob_ai.cpp(1586) for ai movement client zone reentry
+test at mob_ai.cpp(1782) for ai movement guard point
+	- I need to update the zone after each client enters
+	- several logging items added to three files - search for date (2/19/16) to remove - \zone\worldserver.cpp  \zone\zoning.cpp  \world\client.cpp
+	- as soon as this function <Client::UpdateAdmin> is called is when client updates should occur
+		- <Client::CompleteConnect> and <entity_list.SendZoneAppearance(this);> more precisely
+		- create a switch (true/false) to put into the above function and possibly <DoAIMovement> when client enters the zone to do a pos update
+	- maybe use this -> <EntityList::SendPositionUpdates>
+	- nothing has worked
+		- there is a short period of time during zoning when the client does not get the right information
+		- it's almost like lost time, 6 seconds in one instance where the mob pos was not updated properly but another was - files
+			`befallen_version_0_inst_id_0_port_7013_7040` & `commons_version_0_inst_id_0_port_7014_3620`
+		- timestamps around `[02-20-2016 :: 09:28:54]` this one appeared fine but the next one didn't
+; many changes - new function which doesn't appear to do anything <EntityList::ZEposUpdate>	- \zone\entity.h(419) \zone\entity.cpp(4254)
+....................
+
+; Combined pet and NPC guard movement behavior into on function <NPC::NextGuardPosition> - \zone\waypoints.cpp(442)
+	- this was a revamp of guard movement to make it more efficient
+	- removed all of the code from <NPC::AI_DoMovement> - <IsGuarding> section - \zone\mob_ai.cpp(1784)
+	- this did not fix the mob update issue
+
+; Added to <EntityList::MobProcess> to disable the <staticzone_timer> when there is at least one client in zone - \zone\entity.cpp(554)
+
+; Created function <bool IsInstantHealSpell> for use in changing how heal aggro is noticed by NPCs - \common\spdat.h(847) \common\spdat.cpp(886)
+	- implemented function in <Mob::CheckHealAggroAmount> in conjunction with a switch to identify - \zone\entity.h(337) \zone\entity.cpp(3111) \zone\aggro.cpp(1256)
+	- instant heals are now noticed 90% of the time
+
+; Implemented higher initial hate for kos with buffing and healing in <EntityList::AddHealAggro> - \zone\entity.cpp(3121)
+
+; aggro: Mobs should always notice healing spells but not buffs - changed heals to 90% - done
+
+; double check invis spells at \zone\spells.cpp(3738)
+	- can a player be invis to undead, animals and regular all at the same time?
+	- Changed how invis effects stack with each other in <Mob::SpellOnTarget> - \zone\spells.cpp(3740)
+		- this will need some work to allow the same spell effect with a higher to overwrite
+		- although unfailing invis usually has a lower duration so, the code as it is may be good enough
+		- also added a caster message if the spell doesn't stick
+
+; Created new function <EntityList::ZEposUpdate> for the purpose of updating zoning clients	- \zone\entity.h(419) \zone\entity.cpp(4241)
+	- the function works but it does not update the client as I had hoped - commented out any usage of it
+
+; changes which should be reverted - \zone\client.h()1281) \zone\client.cpp(164) \zone\client_packet.cpp(1018) \zone\mob_ai.cpp(1024,1588) \zone\entity.cpp(3951) - done
+	- some of this was left in with notes added
+
+; gm medding while thirsty not working still - fixed
+	- Added a condtion to <Client::CalcManaRegen> to make GM thirst level become a non-factor when medding for mana - \zone\client_mods.cpp(1276)
+		- I had previously overlooked adding this condition
+
+; Tweaked hate logging for better results in <HateList::GetEntWithMostHateOnList> - \zone\hate_list.cpp(710)
+
+ToDo: hate/aggro project
+.......................
+aggro: there should be a reductions in added hate when recasting the same spell over and over and it's a debuff/snare type and it is not resisted
+	- maybe not - data suggests this doesn't occur except for shaman slows??
+
+aggro: hot hate
+	- if this will be hate over time it will need to function similar to war discs or dots (ibufftic?)
+		- effectid = 100 (probably) spell_category = 21 (probably not)
+		- will also need to figure out how much hate is generated - the amount like normal heals (2/3) or something less? (1/2?)
+
+; aggro: taunt rules and success rates, particularly on yellow/red cons - this is complete! Yay!
+	- check Alkabor code - \zone\special_attacks.cpp
+	- pet taunt should be nerfed some
+		- riding pet hate/taunt should not be as effective as it is
+	- initial tests work
+
+aggro: special attack hate monk skills
+
+aggro: Archery hate is off on hits and misses - so many little things need some tweaking
+
+taunt: required training up until Veksar release (expansion 5.5 - May 14, 2003)
+........................
+
+; Changed many of the mechanics of taunt in <Mob::Taunt> to fit an earlier era - \zone\special_attacks.cpp(2294)
+	- much of this was courtesy of Alkabor with minor customizing and some altering to fit the code
+	- the major difference affects taunt chance and level difference
+	- taunt will no longer automatically make the mob face the taunter when successful - something else must be done
+	- a few conditions were added from alkabor which were previously omitted
+	- this may be all that is needed for the life of the server except, perhaps, if mobs lvl 60+ become affected by skill after PoP
+
+; Damage:	giving a pet a weapon currently does nothing for damage if wd is greater than pet innate dmg - fixed
+	- \zone\attack.cpp(1241), <PetInfo>
+	- Added conditions to <NPC::Attack> to allow low level pets weilding weapons with max damage higher than their `npc_types.maxdmg` to use weapon damage - \zone\attack.cpp(1991)
+
+; Sycd RtN code with new updates
+
+
+2/21/16
+
+; aggro: the issue with mobs chasing after leaving melee range was somewhat fixed with the aggro changes - finally fixed! need to test with pets but likely works
+	- it appears for the mob to switch targets to pet, the pet must attack thereby making a change to the hatelist amounts
+	- changing targets seems to happen a few times per second and not instant - I thought I saw this somewhere
+	- fixed this issue but created another - this fixed also
+	- Added to <Mob::AI_Process> and created a new timer <AIcheck_target_oor_timer> for NPCs staying in combat range - \zone\mob_ai.cpp(430,481,550,1027,1404)  \zone\mob.h(1237)
+		- this was to prevent NPCs from following a player when leaving melee range and the hate amounts of those in combat range were close enough the NPC would normally stay put
+
+; updated a few hundred npc_types expansion values to their proper expansion - ldon mostly
+
+; updated remainder of npcs lvl 16-40 for expansions 0-3.5 whose max hp were under the equation used to update
+
+; reworked top damage logging to include pet damage and pet % of total damage - complete
+	- Altered <NPC::Death> logging for "Top Damage" to include pet total damage and damage percent - \zone\attack.cpp(2376)
+		- also reworked logging in <HateList::GetEntWithMostHateOnList> for better data/readability - \zone\hate_list.cpp(709)
+
+
+2/22/16
+
+; Get parses on DS damage in the logs - logging added
+	- fights with druid DS at ~lvl 19 with ~lvl 20 mobs with Kevin is about 20% DS damage
+	- damage shield damage should be counted in <Mob::DamageShield> similar to <AddToHateList> - \zone\attack.cpp(2901)
+		- a much simpler version is only needed due to only counting damage on the entity(NPC)
+		- this new function should then be added to <AddEntToHateList> or something similar
+	- lots of tweaking/testing but got it to work
+	- Altered <struct_HateList> and created new functions <HateList::AddDSDamage>, <HateList::TotalDSDamage> to calculate total damage done by a damage shield on an NPC
+		- implemented functions in <Mob::DamageShield> and <NPC::Death> - \zone\hate_list.h(32,72) \zone\hate_list.cpp(364,974,996) \zone\attack.cpp(2283,2374,2946)
+		- the main purpose of creating these were to log DS damage to get better data on NPC hp/total damage
+
+; SK loottable 4592 avaiaks dropping two spell research components - done
+
+; pet taunt does not always work - double check
+	- look at/test - \zone\npc.cpp(137) \zone\client_packet.cpp(10010)
+	- seems that pets do not taunt undead - BT_Undead - \zone\special_attacks.cpp(1903)
+		- this may be why I was not seeing the pet taunt since the tests were performed on undead
+
+; Changed zone forage chance to 12% to essentially equal the chance of foraging any of the common items in <Client::ForageItem> - \zone\forage.cpp(407)
+	- the chance of zone forages in the database may need to be adjusted up to come closer to the chance of a single common item
+
+2/23/16 - 2/24/16
+
+; Changed zone forage % chance to 12 from 25 in <Client::ForageItem> to give common forages a better overall chance to be acquired - \zone\forage.cpp(407)
+
+; Made changes to logging of top damage in <NPC::Death> for better readability and minor mistakes - \zone\attack.cpp(2289,2377)
+	- for this changed the result of one of the custom functions calculating total damage in <HateList::TopDamageRatio> - \zone\hate_list.cpp(1043)
+
+; add taunt success log into combat messages - done
+	- Added logging to <Mob::Taunt> on a successful taunt to better track top hate - \zone\special_attack.cpp(2376)
+
+Spell Resist Project:
+.......................
+Code work:
+	- notes on code changes currently reside in the C++ files at <Mob::ResistSpell> - \zone\spells.cpp(4521)
+	- using Alkabor to check differences and defaulting to many Alkabor implementations
+	- look at the differences between Alkabor and peq - <Mob::ApplySpellsBonuses> <Client::ApplyAABonuses> - \zone\bonuses.cpp()
+
+Database work:
+	- the DB values for resists are different from Alkabor - this will be a project
+
+	Godsend that the spell files from the cds seem to have the proper `resistdiff` - column #'s listed below
+		- evo - 135 max columns - 147
+		- plat - 148 max columns - 184
+		- titanium - 148 max columns - 203
+		Test DB:
+		- `spells_new_evo` column `deities9` == `resistdiff`
+		- `spells_new_plat` column `resistdiff` == `resistdiff`
+		- `spells_new_tit` column `resistdiff` == `resistdiff`
+
+Can start by updating all titanium -> platinum -> evolution and double check the values with Alkabor.
+	- it turns out not many `resistdiff` are different between the `spells_new` tables (only a few hundred)
+
+	In general, for Alkabor:
+		- most NPCs lvl 10 and below have 15 for all resists
+		- lvl 11+ the base resist becomes 25 for all
+		- guards have at all levels have much higher resists
+		- certain NPCs have higher resists in certain areas which are logical - ie. ice_goblins can resist cold better
+		- each mage pet type has much higher resists in the logical type
+
+The alkabor data implies the resist system they use is scaled by level in the code rather than assigning different DB values to the resists which current emu code then scales. This means the data from peq will need to be vetted and the basic formula of standard resists per level be made and anomalies from the standard be accounted for. This means I need to know exactly how the level scaling works for the current code to assign new resist values for NPCs which I cannot get data from Alkabor, which shouldn't be too difficult.
+
+	Peq resist values:
+		- the values are fairly predictable up until around level 60
+		- after level 60 there seems to be two and sometimes three standard values per level
+		- this will make adjusting their values extremely hard for non-alkabor npcs
+		- later expansions npcs seem to higher resists even below level 60
+		- I will need to compare mobs between alkabor and peq at this level to check if a different more than one standard is used
+		- fortunately, the first few expansions will be fine and I can revisi2t this topic later if I'm unable to finish
+
+
+I cannot put the new spell resists in without assigning new npc resists. This will need to be implemented all at once.
+
+.......................
+
+
+2/25/16
+
+; xp with pet solo at low levels is way off - likely off all around
+	- was fine after I aggrod mobs
+	- likely something to do with zone change - see gfaydark port_7020_2160.log 2/25/16 ~02:30
+	- actually unsure what it is atm will need to test - it happened again after zone change with pet
+	- jeryd had DS and occasionally snared and flame lick was taking damage although this seems to only happen with the pet up
+		- base shows a large negative each time this occurred
+	- Hotfix: Fixed Xp gain with pet doing more than 25% damage and less than 50% in <NPC::Death> - \zone\attack.cpp(2290,2381)
+		- this was causing maximum XP gain, at least at low levels, if damage met the conditions above
+		- this was a result of added logging recently
+		- also changed the name of the variable to something which better describes it <petdmg_ratio>
+
+; dots on a mob that kills the mob after a player zones will crash the zone
+	- this is the longstanding bug I have seen crashes on before but couldn't identify
+	- Hotfix: Bug fixes in <NPC::Death> in three places - \zone\attack.cpp(2191,2381,2543)
+		- two instances in logging and one with the killshot going to a non-existent entity in the zone seen through DoTs
+
+
+2/28/16
+
+; pet doesn't seem to add to hate list other mobs attacking if it has a target - this appears to be fixed with change
+	- Added conditions within <Mob::CommonDamage>  and <Mob::SpellOnTarget> to add to a pet's hate_list if the owner is attacked by multiple NPCs
+		- previously, the pet would not automatically attack other mobs after it's first target unless commanded - \zone\attack.cpp(4036) \zone\spells.cpp(3998)
+
+; DS damage should not aggro pet as it does - tested fixed
+	- Added condition within <Mob::CommonDamage> to make pets not aggro when owner strikes a DS - \zone\attack.cpp(3866)
+
+; rooted mobs take full damage from dots - need to test
+	- Fixed errant conditions in <Mob::GetActDoTDamage> which were allowing full dot damage to rooted mobs - \zone\effects.cpp(212)
+		- also fixed a condition which did not give full damage when fleeing
+
+; should put something in for channelling to be successful more often if the mob is deep green
+	- shouldn't matter because they won't hit as often anyways and if you have a train they *should* interrupt
+	- although keep farming of windstones, etc on luclin in mind
+
+; change fear speed to = 0 if < 0 maybe this has something to do with mobs going poof but likely not because they are moving when this occurs
+	- Added to condition to return speed of 0 if speed is < 0 in <Mob::_GetFearSpeed> in several places - \zone\mob.cpp(761)
+
+; mobs need to flee sooner - most flee at 16% change ratios
+	- Changed flee_ratio for lt blue NPCs in <Mob::CheckFlee> to coincide with the rule change and desired outcome - \zone\fearpath.cpp(94)
+		- new hp % is: green @ 25% - blue/lt blue @ 20% and all else @ 17.5%
+
+; pet no attack with root on owner - the above change may fix this will need to test
+	- Added conditions in <Mob::SpellOnTarget> to have pet attack if the detrimental spell does not cause damage - \zone\spells.cpp(4049)
+
+; animation pet wakes up mezzed mob - fixed for all pets
+	- Added and changed part of <> to make pets not attacked mezzed NPCs
+		- this does not always work I think it needs to get done at the moment of getting mezzed in spells.cpp(5246) - reverted
+	- could go somewhere in <NPC::Process> or <Mob::AI_Process>
+		- Added to <Mob::AI_Process> conditions to immediately stop pet attacks when a mob is mezzed - \zone\mob_ai.cpp(1121)
+
+		
+3/1/16		
+		
+; use github for new commands to load shared memory - need to test
+	Added command <hotfix> <load_shared_memory> and <apply_shared_memory> to load shared memory as a GM command
+		- numerous changes of which I'm guessing allow the greater functionality of using the commands to load specific shared DB sections
+		- \zone\command.cpp(10672) \zone\command.h(254,367) \common\shareddb.h(96) \common\shareddb.cpp(too many to list) \common\servertalk.h(87) \common\item.cpp(1443,1474,1530)
+		- \zone\net.cpp(too many to list) \zone\worldserver.cpp(1844) \world\net.cpp(298) \world\zoneserver.cpp(1291,1302)
+		- \shared_memory\main.cpp(too many to list) \shared_memory\base_data.h() \shared_memory\base_data.cpp() \shared_memory\items.h() \shared_memory\items.cpp()
+		- \shared_memory\loot.h() \shared_memory\loot.cpp() \shared_memory\npc_faction.h() \shared_memory\npc_faction.cpp()
+		- \shared_memory\skill_caps.h() \shared_memory\skill_caps.cpp() \shared_memory\spells.h() \shared_memory\spells.cpp()
+
+; sync'd RtN code with recent changes		
+
+
+3/2/16		
+
+; Changed archery damage calculation in <Mob::DoArcheryAttackDmg> based on github commits - \zone\special_attacks.cpp(1027)
+
+; Added to GM command #showstats through <Client::SendStatsWindow> to show runspeed on the stats window - \zone\client.cpp(7092)
+		
+; NPC/PC kicks start to stun at lvl 55 - fixed in rule
+
+stun chance in general could be revamped from alkabor code at \zone\special_attacks.cpp(259)
+	
+more progress on backstab damage formula, noted in WIP folder
+	
+double check to see if animation pets are allowed to taunt
+
+look into pet aggro if invulnerable, rune, etc - may need to place pet addtohatelist before other areas in <Mob::SpellOnTarget> - \zone\spells.cpp(3958)
+
+look into double riposte, happened at 50 - possibly two different mobs but should only get one per round
+
+look into pet hp regen at <npc::process> \zone\npc.cpp(618)
+
+can't disband with leader outside of zone - this may have been noted before
+
+consider omitting pet damage/xp restrictions below a certain low level
+
+look into cleric spell reckless str and similar
+	- for tradeskills it shows as having +8 str from what the client says - check spell data in code first for how it works
+	- this spell is using the incorrect formula - form 107 should not be used
+	- in addition, it does not show degradation of the stat over time server side (it does on the client)
+		- should test this with gm and #showbuffs
+	- this should probably be applied like a dot in that it cannot be clicked off
+		- it could behave like a dot with the effect changing each tic/tics
+			- looking at the splurt formula may help (formula 122)
+		- get the data from the client which appears to do it correctly
+	- to start, the formula should be changed to 100
+
+...................
+
+jewelcraft: many of the JC recipes are off
+	- use GM to get enchanted recipes (can use vamest on RtN for first few enchanted recipes, he's only done enchanted) and change incorrect ones by using a dummy ID like 99999
+		- for the first update replace the 2nd id with the first id and then change the 1st to the second (3 steps)
+	- name the enchanted recipes (enchanted) or give it some kind of notation
+
+Have adam do some grid work - gave tutorial, command list and my macros, (2/29/16) hasn't logged in since - fucking slack ass
+
+#fixmob can be used to change texture of clothing
+	- #texture can be used to cycle through the graphics visually but, no changes are made to the DB
+		
+muddite loottable - 3 x muddite mud
+
+orcs and gnolls in highpass should be kos to all
+
+spell soothe is mispriced I think
+
+goblin alchemist on same faction as minotaurs in gorge it appears
+
+keepers of the art faction id 170 change - karana/ranger kos
+
+lt leafstalk gfay grid
+
+crushbone belts drop too often in crushbone
+
+high elves are considered small? armor
+
+no piece for binding for high elf enc
+
+felwithea/b heading zone_poitns
+
+deputy alltin pathing misty
+
+misty - bidils the quickhand?
+
+invis does not drop on buff bar when trading although the other person can see
+
+DW/DA skillup checks need to occur only on a successful swing
+	- maybe if that becomes the case the chamcemod should probably be decereased
+
+knari in SK is factionless
+
+check aviaks and mobs in general for triple attack/dw
+
+check aviak darter damage in SK
+
+check muddite faction in gorge - minos also (6 factions affected?)
+
+muddites proc too often
+
+zone_points heading for runnyeye to gorge but not the other way	- search is set to test value 999 looks off
+
+ToDo: recent pet changes - need to alter special_abilities and a few other things with individual entries
+	- changed most pets who had dual wield innate prior to lvl 39 except BL pets
+		- need to look into BL pet attacks
+
+look into druid tracking max skill
+	- On March 6th, 2001: The tracking skill cap for Druids has been raised to 125.
+	- think about raising the skill-cap
+
+come up with a world announcement which I can do while not in game
+	Perl
+	- quest::me(text) # Does a name-less emote.
+	- quest::ze(color_id, text) # Zone-wide emote.
+	- quest::gmsay(text, color, all_zones?, guild_id, minstatus)
+	- quest::echo(color, text) # Echoes specified 'text' to console.
+	- quest::crosszonemessageplayerbyname(type, name, message) # Messages player 'name' with color 'type' the message 'message'.
+	- having a hard time with this
+
+should put the hate/aggro logging into it's own function to use if <isentonhatelist>
+	- rooted mobs stop the logging
+
+NPCs do not have gate in their spell repertoire
+
+Change mob hp again based on above parses
+
+maybe set a condition in fearpathing where no watermap and then make the z change wider
+
+need to check if pets can be looted, they shouldn't
+	- armor AC on pets is added directly to the npc AC value
+
+Fizzle observations: - \zone\spells.cpp(854)
+...........
+fixed quite a bit about fizzle - still possible issues
+	- noticed after = lvl the fizzchance is low capped - look into this - I think the result shown was a fluke (round number)
+
+at lower levels
+at > 5 levels over the spell level the fizzle chance decreases rapidly with skill gain but appears not to with level gain
+
+on the from 4th to 5th the decrease is large (-1.11 chance spskill/lvl 40,5 cskill/lvl 46,10)
+
+double check fizzle rates when within the threshold of spell level, seems like the bonus is high
+
+fizzle should probably not be affected by level after 5 levels if it's a positive influence
+
+check critical fizzle chance before during and after
+
+no check for over 5 levels from spell level and no check over level 20 if not equal
+
+...........
