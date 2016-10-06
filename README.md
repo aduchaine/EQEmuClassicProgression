@@ -1,6 +1,6 @@
 # EQEmuClassicProgression
 
-Text file contents show organization of issues, changes and a todo list with notes.
+Text file contents show organization of issues, changes and a todo list with notes. Nearly all changes were created custom by Adrian.
 
 // deprecated -> 
 Repository for progression-based data, mysql scripts and anything related.
